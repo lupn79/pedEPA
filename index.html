@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="epa-data-peds.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ECE6F1; --bg2:#E1D9EA; --surface:#FCFAFE; --surface2:#F4EFF9;
+    --ink:#2A2531; --sub:#615869; --muted:#988EA4; --line:#E4DCEE; --lineS:#D4C8E2;
+    --a:#7A4F94; --aD:#5D3A73; --aT:#F0E9F5; --aT2:#E2D3EE; --aInk:#48305a;
+    --gold:#C08A3A; --goldT:#F4EBD8;
+    --peer:#4E8A86;
+    --warn:#B0573f;
+    --shadow:0 1px 2px rgba(45,32,60,.05), 0 6px 20px rgba(45,32,60,.07);
+    --shadowS:0 1px 2px rgba(45,32,60,.06);
+    --r:14px;
+  }
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .app-root{min-height:100vh}
+  .serif{font-family:"Noto Serif TC","Noto Sans TC",serif}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--lineS);border-radius:6px;border:2px solid var(--bg)}
+
+  .shell{min-height:100vh;display:flex;flex-direction:column}
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(252,250,244,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:16px;padding:10px 20px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,var(--a),var(--aD));color:#fff;display:grid;place-items:center;font-weight:900;flex:none;box-shadow:0 3px 8px rgba(94,58,114,.28)}
+  .brand-mark span{font-size:17px;letter-spacing:.5px}
+  .brand-txt{min-width:0}
+  .brand-txt b{font-size:15px;font-weight:700;display:block;letter-spacing:.2px;white-space:nowrap}
+  .brand-txt small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .topbar-spacer{flex:1}
+  .role-seg{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px}
+  .role-seg button{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:.15s}
+  .role-seg button .ic{width:16px;height:16px;opacity:.7}
+  .role-seg button.on{background:var(--surface);color:var(--aInk);box-shadow:var(--shadowS)}
+  .role-seg button.on .ic{opacity:1}
+  .lay-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .lay-btn{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface2)}
+  .lay-btn button{padding:6px 9px;font-size:12px;font-weight:600;color:var(--sub)}
+  .lay-btn button.on{background:var(--a);color:#fff}
+
+  .body{flex:1;display:flex;min-height:0}
+  .sidebar{width:236px;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:6px}
+  .side-h{font-size:11px;font-weight:700;letter-spacing:1.2px;color:var(--muted);padding:6px 10px 2px;text-transform:uppercase}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--sub);transition:.14s;text-align:left;width:100%}
+  .nav-item .ic{width:18px;height:18px;opacity:.7;flex:none}
+  .nav-item:hover{background:var(--surface2)}
+  .nav-item.on{background:var(--aT);color:var(--aInk)}
+  .nav-item.on .ic{opacity:1}
+  .nav-item .badge{margin-left:auto;background:var(--bg2);color:var(--sub);font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px}
+  .nav-item.on .badge{background:var(--aT2);color:var(--aInk)}
+  .side-foot{margin-top:auto;font-size:11px;color:var(--muted);padding:10px;line-height:1.6;border-top:1px solid var(--line)}
+
+  .tabsnav{background:var(--surface);border-bottom:1px solid var(--line);display:flex;gap:4px;padding:0 20px;overflow-x:auto}
+  .tabsnav button{padding:14px 16px;font-size:14px;font-weight:600;color:var(--sub);border-bottom:2.5px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .tabsnav button .ic{width:17px;height:17px;opacity:.65}
+  .tabsnav button.on{color:var(--aInk);border-bottom-color:var(--a)}
+  .tabsnav button.on .ic{opacity:1}
+
+  .main{flex:1;min-width:0;overflow-x:hidden}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 64px}
+  .wrap.narrow{max-width:880px}
+
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .page-head h1{font-size:25px;font-weight:900;letter-spacing:.3px}
+  .page-head p{color:var(--sub);font-size:14px;margin-top:5px;max-width:62ch}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;margin-bottom:7px}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;font-size:14px;font-weight:700;transition:.15s;white-space:nowrap}
+  .btn .ic{width:17px;height:17px}
+  .btn-primary{background:var(--a);color:#fff;box-shadow:0 3px 10px rgba(94,58,114,.22)}
+  .btn-primary:hover{background:var(--aD);transform:translateY(-1px)}
+  .btn-ghost{background:var(--surface);border:1px solid var(--lineS);color:var(--sub)}
+  .btn-ghost:hover{border-color:var(--a);color:var(--aInk)}
+  .btn-soft{background:var(--aT);color:var(--aInk)}
+  .btn-soft:hover{background:var(--aT2)}
+  .btn-sm{padding:8px 13px;font-size:13px;border-radius:9px}
+  .btn-lg{padding:14px 24px;font-size:15px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadowS)}
+  .grid{display:grid;gap:16px}
+  .stu-grid{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .stu-card{padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;transition:.16s;cursor:pointer}
+  .stu-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--lineS)}
+  .stu-top{display:flex;align-items:center;gap:13px}
+  .avatar{width:46px;height:46px;border-radius:13px;background:var(--aT);color:var(--aInk);display:grid;place-items:center;font-weight:900;font-size:18px;flex:none}
+  .stu-name{font-size:16px;font-weight:800}
+  .stu-meta{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--sub);border:1px solid var(--line)}
+  .chip.stage{background:var(--aT);color:var(--aInk);border-color:transparent}
+  .chip.gold{background:var(--goldT);color:#7d5a20;border-color:transparent}
+
+  .mini-stats{display:flex;gap:10px}
+  .mini{flex:1;background:var(--surface2);border-radius:10px;padding:9px 11px}
+  .mini .k{font-size:11px;color:var(--muted);font-weight:600}
+  .mini .v{font-size:19px;font-weight:900;margin-top:1px;line-height:1.1}
+  .mini .v small{font-size:11px;font-weight:600;color:var(--muted)}
+
+  .progressbar{height:7px;border-radius:6px;background:var(--bg2);overflow:hidden}
+  .progressbar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--a),var(--aD))}
+
+  .epa-dots{display:flex;gap:6px;flex-wrap:wrap}
+  .epa-dot{flex:1;min-width:54px;border-radius:9px;padding:7px 6px;text-align:center;background:var(--surface2);border:1px solid var(--line)}
+  .epa-dot .lab{font-size:10.5px;color:var(--muted);font-weight:700}
+  .epa-dot .num{font-size:14px;font-weight:900;margin-top:1px}
+  .epa-dot.na .num{color:var(--muted)}
+
+  .seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px;flex-wrap:wrap}
+  .seg button{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub)}
+  .seg button.on{background:var(--surface);color:var(--aInk);box-shadow:var(--shadowS)}
+
+  .form-sec{padding:20px 22px;margin-bottom:16px}
+  .form-sec h3{font-size:15px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:9px}
+  .form-sec h3 .n{width:24px;height:24px;border-radius:8px;background:var(--aT);color:var(--aInk);display:grid;place-items:center;font-size:13px;font-weight:900;flex:none}
+  .form-sec .hint{font-size:12.5px;color:var(--muted);margin-bottom:15px;padding-left:33px}
+  .field-row{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:6px}
+  .input,select.input{width:100%;padding:10px 12px;border:1px solid var(--lineS);border-radius:10px;background:var(--surface);font-size:14px;transition:.14s}
+  .input:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px var(--aT2)}
+  textarea.input{resize:vertical;min-height:90px;line-height:1.6}
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .checkpill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:10px;border:1px solid var(--lineS);background:var(--surface);font-size:13px;font-weight:600;color:var(--sub);transition:.13s}
+  .checkpill:hover{border-color:var(--a)}
+  .checkpill.on{background:var(--aT);border-color:var(--a);color:var(--aInk)}
+  .checkpill .box{width:15px;height:15px;border-radius:5px;border:1.5px solid var(--lineS);display:grid;place-items:center}
+  .checkpill.on .box{background:var(--a);border-color:var(--a)}
+
+  .epa-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px}
+  .epa-tile{padding:14px;border-radius:12px;border:1.5px solid var(--lineS);background:var(--surface);text-align:left;transition:.15s}
+  .epa-tile:hover{border-color:var(--a)}
+  .epa-tile.on{border-color:var(--a);background:var(--aT)}
+  .epa-tile .tag{font-size:11px;font-weight:800;color:var(--a);letter-spacing:.5px}
+  .epa-tile .tt{font-size:14.5px;font-weight:800;margin-top:4px}
+  .epa-tile .ds{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  .rate-item{padding:15px 0;border-top:1px solid var(--line)}
+  .rate-item:first-child{border-top:none}
+  .rate-q{display:flex;gap:11px;font-size:13.5px;line-height:1.55;margin-bottom:11px}
+  .rate-q .qi{flex:none;width:22px;height:22px;border-radius:7px;background:var(--surface2);color:var(--sub);font-weight:800;font-size:12px;display:grid;place-items:center;margin-top:1px}
+  .rate-q.overall .qi{background:var(--aD);color:#fff}
+  .scale{display:flex;gap:5px;flex-wrap:wrap}
+  .scale button{min-width:42px;padding:8px 4px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);font-size:13px;font-weight:800;color:var(--sub);transition:.12s;text-align:center;line-height:1.15}
+  .scale button small{display:block;font-size:8.5px;font-weight:700;color:var(--muted);letter-spacing:.3px}
+  .scale button:hover{border-color:var(--a)}
+  .scale button.on{background:var(--a);color:#fff;border-color:var(--a);box-shadow:0 2px 7px rgba(94,58,114,.3)}
+  .scale button.on small{color:rgba(255,255,255,.85)}
+  .scale button.na.on{background:var(--muted);border-color:var(--muted)}
+  .scale-key{display:flex;gap:4px;margin-top:6px;font-size:10px;color:var(--muted);flex-wrap:wrap}
+
+  .actionbar{position:sticky;bottom:0;z-index:20;background:rgba(252,250,244,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);
+    margin:0 -24px -64px;padding:14px 24px;display:flex;align-items:center;gap:14px;justify-content:flex-end;flex-wrap:wrap}
+  .actionbar .summary{margin-right:auto;font-size:13px;color:var(--sub)}
+  .actionbar .summary b{color:var(--aInk);font-size:15px}
+
+  .chart-card{padding:18px 20px}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+  .chart-head h3{font-size:15px;font-weight:800}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);font-weight:600}
+  .legend i{display:inline-block;width:13px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .legend i.dash{height:0;border-top:2px dashed var(--gold);width:15px}
+
+  .report-paper{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .report-band{background:linear-gradient(135deg,var(--a),var(--aD));color:#fff;padding:24px 30px}
+  .report-band .org{font-size:12.5px;opacity:.85;letter-spacing:1px}
+  .report-band h2{font-size:22px;font-weight:900;margin-top:4px}
+  .report-band .sub{font-size:13px;opacity:.9;margin-top:7px}
+  .report-body{padding:26px 30px}
+  .rep-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 24px;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .rep-meta .k{font-size:11.5px;color:var(--muted);font-weight:700}
+  .rep-meta .v{font-size:14px;font-weight:700;margin-top:2px}
+  .rep-overall{display:flex;align-items:center;gap:20px;background:var(--aT);border-radius:12px;padding:18px 22px;margin-bottom:22px;flex-wrap:wrap}
+  .rep-overall .big{font-size:40px;font-weight:900;color:var(--aInk);line-height:1;font-family:"Noto Serif TC",serif}
+  .rep-overall .lbl{font-size:13px;color:var(--aInk);font-weight:700}
+  .rep-overall .lbl small{display:block;color:var(--sub);font-weight:600;margin-top:3px;font-size:12px}
+  table.rep-table{width:100%;border-collapse:collapse;font-size:13px}
+  table.rep-table th,table.rep-table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.rep-table th{font-size:11.5px;color:var(--muted);font-weight:700;background:var(--surface2)}
+  table.rep-table td.lv{text-align:center;width:120px;font-weight:800;white-space:nowrap}
+  .lvpill{display:inline-block;padding:3px 11px;border-radius:20px;font-weight:800;font-size:12.5px}
+  .qbox{background:var(--surface2);border-radius:11px;padding:15px 17px;font-size:13.5px;line-height:1.7;color:var(--sub)}
+
+  .tablewrap{overflow-x:auto;border-radius:var(--r)}
+  table.data{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+  table.data th,table.data td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  table.data thead th{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;background:var(--surface2);position:sticky;top:0}
+  table.data tbody tr{transition:.12s;cursor:pointer}
+  table.data tbody tr:hover{background:var(--surface2)}
+  table.data td.num{font-weight:800;font-variant-numeric:tabular-nums}
+  .banner{display:flex;align-items:flex-start;gap:9px;background:var(--goldT);border:1px solid #e6d3a8;color:#7d5a20;padding:12px 15px;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:16px}
+  .banner .ic{width:17px;height:17px;flex:none;margin-top:1px}
+  .stu-pick{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border:1.5px solid var(--lineS);border-radius:12px;background:var(--surface);transition:.13s;text-align:left}
+  .stu-pick:hover{border-color:var(--a)}
+  .stu-pick.on{border-color:var(--a);background:var(--aT)}
+  .stu-pick .ic{width:18px;height:18px;color:var(--a)}
+  .sheet-status{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--sub);background:var(--surface2);border:1px solid var(--line);padding:6px 12px;border-radius:20px;white-space:nowrap}
+  .sdot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .sdot.on{background:#3a9b6e}.sdot.off{background:var(--warn)}.sdot.idle{background:var(--gold)}
+  .modal-overlay{position:fixed;inset:0;z-index:80;background:rgba(44,40,34,.42);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .2s ease}
+  .modal-card{background:var(--surface);border-radius:16px;box-shadow:0 18px 50px rgba(44,40,34,.28);width:100%;max-width:460px;overflow:hidden}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);font-size:16px}
+  .modal-x{font-size:22px;line-height:1;color:var(--muted);padding:0 4px}
+  .modal-x:hover{color:var(--ink)}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface2)}
+
+  .empty{text-align:center;padding:54px 20px;color:var(--muted)}
+  .empty .ic{width:46px;height:46px;opacity:.5;margin:0 auto 12px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  @keyframes fade{from{transform:translateY(8px)}to{transform:translateY(0)}}
+  .fade{animation:fade .28s ease}
+
+  @media(max-width:860px){
+    .sidebar{display:none}
+    .topbar{padding:9px 14px;gap:10px;flex-wrap:wrap}
+    .role-seg button span.t{display:none}
+    .role-seg button{padding:7px 11px}
+    .wrap{padding:20px 15px 80px}
+    .lay-toggle{display:none}
+    .page-head h1{font-size:21px}
+    .actionbar{margin-left:-15px;margin-right:-15px;padding:12px 15px}
+  }
+  @media(max-width:560px){
+    .brand-txt small{display:none}
+    .mini-stats{flex-wrap:wrap}
+  }
+
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff}
+    .topbar,.sidebar,.tabsnav,.actionbar,.no-print{display:none !important}
+    .wrap{padding:0;max-width:none}
+    .report-paper{border:none;box-shadow:none;border-radius:0}
+    .report-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .lvpill,.rep-overall,.report-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</helmet>
+<div class="app-root">{{ app }}</div>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<rect width="100" height="100" rx="18" fill="#7A4F94"/>
+<text x="50" y="62" font-size="34" font-family="sans-serif" font-weight="900" fill="#F0E9F5" text-anchor="middle">EPA</text>
+</svg>
+</template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:900},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;grape&quot;,&quot;rose&quot;,&quot;ocean&quot;],&quot;default&quot;:&quot;grape&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;sheetUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const h = React.createElement;
+function el(tag, cls, ...kids){ return h(tag, cls ? {className:cls} : null, ...kids); }
+
+const IC = {
+  teacher:'M4 19v-1a4 4 0 0 1 4-4h3M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM14.5 14.5l2.5 2.5 4-4',
+  list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  plus:'M12 5v14M5 12h14',
+  chart:'M3 3v18h18M7 14l3-3 3 3 5-6',
+  doc:'M7 3h7l5 5v13H7zM14 3v5h5M9 13h6M9 17h6',
+  back:'M15 18l-6-6 6-6',
+  print:'M6 9V3h12v6M6 18H4v-5h16v5h-2M8 14h8v7H8z',
+  excel:'M4 3h11l5 5v13H4zM14 3v5h5M8 12l5 6M13 12l-5 6',
+  check:'M20 6L9 17l-5-5',
+  flag:'M5 21V4M5 4c3-2 6 2 9 0s5 0 5 0v9s-2 2-5 0-6-2-9 0',
+};
+function icon(name, cls){
+  return h('svg',{className:'ic '+(cls||''),viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','strokeWidth':2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:IC[name]||''}));
+}
+
+const PALETTES = {
+  grape:{a:'#7A4F94',aD:'#5D3A73',aT:'#F0E9F5',aT2:'#E2D3EE',aInk:'#48305a'},
+  rose:{a:'#B0496B',aD:'#8C3854',aT:'#F7E8EE',aT2:'#EDD2DD',aInk:'#7a2f49'},
+  ocean:{a:'#2F6F9E',aD:'#23527A',aT:'#E6F0F7',aT2:'#D2E3F0',aInk:'#214c70'},
+};
+
+// ====== Google 試算表設定 ======
+// 已內建兒童 EPA 專用 Apps Script 網址：其他老師開啟即自動連線、自動載入名冊，無需任何設定。
+const SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwaam9mQ4NY6uH71_ZDeL9Ty1HjawqIAU7cf4LJy1RvbuknVByyFSKD3BCdeUga6LBBXA/exec';
+
+// ====== 管理者密碼 ======
+// 進入「名冊管理」需輸入此密碼；要更換請改下方引號內文字後重新匯出。
+const ADMIN_PIN = 'tmuh-epa';
+
+class Component extends DCLogic {
+  state = {
+    loading:true, view:'entry', draft:null, report:null,
+    roster:[], teachers:[], rosterLoaded:false, sheetOnline:false, sheetMsg:'',
+    selStudent:'', submitting:false, showSettings:false,
+    adminUnlocked:false, adminBusy:false, stuForm:null, teacherForm:'',
+    toast:null,
+  };
+
+  // ---- Google 試算表資料層 ----
+  get sheetUrl(){
+    let u='';
+    try{ u=localStorage.getItem('epa_peds_sheet_url')||''; }catch(e){}
+    return ((this.props.sheetUrl||'') || u || SHEET_WEBAPP_URL || '').trim();
+  }
+  saveUrl(val){
+    const v=(val||'').trim();
+    try{ if(v) localStorage.setItem('epa_peds_sheet_url', v); else localStorage.removeItem('epa_peds_sheet_url'); }catch(e){}
+    this.setState({showSettings:false, rosterLoaded:false}, ()=>this.loadRoster());
+    this.toast(v?'已儲存試算表連結':'已清除連結（離線模式）');
+  }
+  async sheetGet(params){
+    const url=this.sheetUrl; if(!url) throw new Error('no-url');
+    const q=new URLSearchParams(params).toString();
+    const res=await fetch(url+'?'+q, {method:'GET'});
+    return await res.json();
+  }
+  async sheetPost(payload){
+    const url=this.sheetUrl; if(!url) throw new Error('no-url');
+    const res=await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)});
+    return await res.json();
+  }
+  loadRoster(){
+    if(!this.sheetUrl){ this.setState({rosterLoaded:true, sheetOnline:false, sheetMsg:'尚未連接 Google 試算表（離線模式）—評核不會被儲存。'}); return; }
+    this.sheetGet({action:'roster'}).then(r=>{
+      const list=(r&&r.students)||[];
+      const tlist=(r&&r.teachers)||[];
+      this.setState({roster:list, teachers:tlist, rosterLoaded:true, sheetOnline:true, sheetMsg:''});
+    }).catch(e=>{
+      this.setState({rosterLoaded:true, sheetOnline:false, sheetMsg:'無法連線試算表，請檢查網址與部署設定。'});
+    });
+  }
+
+  componentDidMount(){
+    const tryInit=()=>{
+      if(window.EPA_DATA){ this.D=window.EPA_DATA; this.setState({loading:false}, ()=>this.loadRoster()); }
+      else setTimeout(tryInit, 30);
+    };
+    tryInit();
+    const pal = PALETTES[this.props.accent] || PALETTES.grape;
+    Object.entries(pal).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k, v));
+  }
+  componentDidUpdate(prev){
+    if(prev.accent!==this.props.accent){
+      const pal = PALETTES[this.props.accent] || PALETTES.grape;
+      Object.entries(pal).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k, v));
+    }
+  }
+
+  teachers(){ return this.state.teachers||[]; }
+  contextLabelsOf(a){
+    const c=a.context||{}, out=[];
+    (c.diagnosis||[]).forEach(dg=>{ if(dg==='其它'){ if(c.diagnosisOther) out.push(c.diagnosisOther.trim()); } else out.push(dg); });
+    return out;
+  }
+  toast(msg){ this.setState({toast:msg}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:null}),2200); }
+
+  renderVals(){
+    if(this.state.loading) return { app: el('div',null) };
+    return { app: this.renderApp() };
+  }
+
+  renderApp(){
+    const {view,toast}=this.state;
+    return el('div','shell',
+      this.renderTopbar(),
+      h('div',{className:'main'},
+        view==='admin'? this.renderAdmin()
+        : view==='form'? this.renderForm()
+        : view==='report'? this.renderReport()
+        : this.renderEntry()
+      ),
+      toast ? el('div','toast', toast) : null,
+      this.renderSettings(),
+      this.renderStuModal()
+    );
+  }
+
+  renderTopbar(){
+    const {sheetOnline}=this.state;
+    return el('header','topbar',
+      el('div','brand',
+        h('div',{className:'brand-mark'}, h('span',null,'EPA')),
+        el('div','brand-txt', h('b',null,'兒童職能治療 · 臨床教師評核'), h('small',null,'臺北醫學大學附設醫院 · Ad-hoc EPA'))
+      ),
+      el('div','topbar-spacer'),
+      h('button',{className:'btn btn-ghost btn-sm',title:'名冊管理（需密碼）',onClick:()=>this.openAdmin()}, '⚿ 名冊管理'),
+      h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.setState({showSettings:!this.state.showSettings})}, '⚙ 試算表設定'),
+      h('div',{className:'sheet-status'},
+        h('span',{className:'sdot '+(this.sheetUrl?(sheetOnline?'on':'off'):'idle')}),
+        this.sheetUrl? (sheetOnline?'已連接':'未連線') : '離線模式')
+    );
+  }
+
+  openAdmin(){
+    if(this.state.adminUnlocked){ this.setState({view:'admin'}); return; }
+    const pin=window.prompt('請輸入管理者密碼');
+    if(pin==null) return;
+    if(pin===ADMIN_PIN){ this.setState({adminUnlocked:true, view:'admin'}); }
+    else this.toast('密碼錯誤');
+  }
+
+  // ---- 管理者：名冊 CRUD（透過 Apps Script）----
+  adminAction(payload, okMsg){
+    if(!this.sheetUrl){ this.toast('未連線試算表，無法管理名冊'); return; }
+    this.setState({adminBusy:true});
+    this.sheetPost(payload).then(r=>{
+      if(r&&r.ok){
+        this.sheetGet({action:'roster'}).then(rr=>{
+          this.setState({adminBusy:false, roster:(rr&&rr.students)||[], teachers:(rr&&rr.teachers)||[], stuForm:null});
+          if(okMsg) this.toast(okMsg);
+        }).catch(()=>{ this.setState({adminBusy:false, stuForm:null}); if(okMsg) this.toast(okMsg); });
+      } else { this.setState({adminBusy:false}); this.toast('操作失敗：'+((r&&r.error)||'請稍後再試')); }
+    }).catch(()=>{ this.setState({adminBusy:false}); this.toast('連線失敗'); });
+  }
+  openStuForm(s){
+    this.setState({ stuForm: s? {name:s.name, stage:s.stage||'PGY1', _old:s.name, _edit:true}
+                              : {name:'', stage:'PGY1', _old:'', _edit:false} });
+  }
+  saveStuForm(){
+    const f=this.state.stuForm;
+    if(!f.name||!f.name.trim()){ this.toast('請輸入學員姓名'); return; }
+    const name=f.name.trim();
+    if(f._edit) this.adminAction({action:'updateStudent', student:name, oldName:f._old, stage:f.stage}, '已更新學員');
+    else this.adminAction({action:'addStudent', student:name, stage:f.stage}, '已新增學員');
+  }
+  setActive(s, active){ this.adminAction({action:'setActive', student:s.name, active}, active?'已恢復在訓':'已設為停訓'); }
+  deleteStu(s){
+    const ok=window.confirm('刪除「'+s.name+'」？\n\n按「確定」會一併刪除其評核資料頁籤（無法復原）。\n如只想暫停顯示，請改用「停訓」。');
+    if(!ok) return;
+    this.adminAction({action:'deleteStudent', student:s.name, deleteData:true}, '已刪除學員與其資料');
+  }
+  addTeacher(){
+    const t=(this.state.teacherForm||'').trim(); if(!t){ this.toast('請輸入教師姓名'); return; }
+    this.setState({teacherForm:''});
+    this.adminAction({action:'addTeacher', teacher:t}, '已新增教師');
+  }
+  removeTeacher(t){ if(window.confirm('從名冊移除教師「'+t+'」？')) this.adminAction({action:'removeTeacher', teacher:t}, '已移除教師'); }
+
+  renderStuModal(){
+    const D=this.D, f=this.state.stuForm; if(!f) return null;
+    return h('div',{className:'modal-overlay',onClick:(e)=>{if(e.target===e.currentTarget)this.setState({stuForm:null});}},
+      el('div','modal-card',
+        el('div','modal-head', h('b',null, f._edit?'編輯學員':'新增學員'), h('button',{className:'modal-x',onClick:()=>this.setState({stuForm:null})},'×')),
+        h('div',{style:{padding:'18px 20px'}},
+          el('div','field', h('label',null,'姓名'),
+            h('input',{className:'input',value:f.name,placeholder:'學員姓名',onChange:e=>this.setState({stuForm:{...f,name:e.target.value}})})),
+          h('div',{className:'field',style:{marginTop:14}},
+            h('label',null,'期別'),
+            h('div',{className:'seg'}, D.STAGES.map(st=>h('button',{key:st,className:f.stage===st?'on':'',onClick:()=>this.setState({stuForm:{...f,stage:st}})},st)))),
+          h('p',{style:{fontSize:11.5,color:'var(--muted)',marginTop:12}},'學員升期（PGY1→PGY2）時，回此處編輯期別即可。')
+        ),
+        el('div','modal-foot',
+          h('button',{className:'btn btn-ghost',onClick:()=>this.setState({stuForm:null})},'取消'),
+          h('button',{className:'btn btn-primary',disabled:this.state.adminBusy,onClick:()=>this.saveStuForm()}, icon('check'), this.state.adminBusy?'處理中…':(f._edit?'儲存':'新增')))
+      )
+    );
+  }
+
+  renderAdmin(){
+    const D=this.D, roster=this.state.roster||[], teachers=this.teachers();
+    return el('div','wrap fade',
+      h('button',{className:'btn btn-ghost btn-sm',style:{marginBottom:16},onClick:()=>this.setState({view:'entry'})}, icon('back'),'返回評核'),
+      el('div','page-head',
+        el('div',null, el('div','eyebrow','管理者專區'),
+          h('h1',null,'學員與教師名冊'),
+          h('p',null,'統一管理名冊，避免評核時姓名輸入錯誤。變更會即時寫入 Google 試算表。')),
+        h('button',{className:'btn btn-primary',onClick:()=>this.openStuForm(null)}, icon('plus'),'新增學員')
+      ),
+      !this.sheetUrl? h('div',{className:'banner'}, icon('flag'), h('span',null,'尚未連線試算表，無法管理名冊。')) : null,
+      h('div',{className:'card tablewrap'},
+        h('table',{className:'data'},
+          h('thead',null,h('tr',null,
+            h('th',null,'學員'), h('th',null,'期別'), h('th',null,'狀態'), h('th',{style:{textAlign:'right'}},'操作'))),
+          h('tbody',null,
+            roster.length? roster.map(s=>{const inactive=s.active===false;
+              return h('tr',{key:s.name,style:inactive?{opacity:.55}:null},
+                h('td',null, h('div',{style:{display:'flex',alignItems:'center',gap:10}},
+                  h('div',{className:'avatar',style:{width:30,height:30,fontSize:13,borderRadius:9}},s.name[0]), h('b',null,s.name))),
+                h('td',null, h('span',{className:'chip stage'},s.stage||'—')),
+                h('td',null, inactive? h('span',{className:'chip'},'停訓') : h('span',{className:'chip stage'},'在訓')),
+                h('td',{style:{textAlign:'right',whiteSpace:'nowrap'}},
+                  h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.openStuForm(s)},'編輯'),
+                  h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:6},onClick:()=>this.setActive(s, inactive)}, inactive?'恢復在訓':'停訓'),
+                  h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:6,color:'var(--warn)'},onClick:()=>this.deleteStu(s)},'刪除')));
+            }) : h('tr',null, h('td',{colSpan:4,style:{textAlign:'center',color:'var(--muted)',padding:'28px'}}, this.state.rosterLoaded?'名冊尚無學員':'載入中…'))
+          )
+        )
+      ),
+      h('div',{className:'card',style:{padding:'18px 20px',marginTop:18}},
+        h('h3',{style:{fontSize:15,fontWeight:800,marginBottom:4}},'教師名冊'),
+        h('p',{style:{fontSize:12.5,color:'var(--muted)',marginBottom:14}},'評核時「評核者」欄將從此名冊下拉選取，避免姓名輸入不一致。'),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:9,marginBottom:14}},
+          teachers.length? teachers.map(t=>h('span',{key:t,className:'chip',style:{paddingRight:5,fontSize:13}}, t,
+            h('button',{onClick:()=>this.removeTeacher(t),style:{marginLeft:4,border:'none',background:'none',cursor:'pointer',color:'var(--muted)',fontSize:15,lineHeight:1,padding:'0 2px'}},'×')))
+          : h('span',{style:{fontSize:13,color:'var(--muted)'}},'（名冊為空）')),
+        h('div',{style:{display:'flex',gap:9,maxWidth:380}},
+          h('input',{className:'input',value:this.state.teacherForm,placeholder:'輸入教師姓名',
+            onChange:e=>this.setState({teacherForm:e.target.value}),
+            onKeyDown:e=>{if(e.key==='Enter')this.addTeacher();}}),
+          h('button',{className:'btn btn-soft',disabled:this.state.adminBusy,onClick:()=>this.addTeacher()}, icon('plus'),'新增'))
+      )
+    );
+  }
+
+  renderSettings(){
+    if(!this.state.showSettings) return null;
+    const cur=(()=>{try{return localStorage.getItem('epa_peds_sheet_url')||'';}catch(e){return '';}})();
+    let val=cur;
+    return h('div',{className:'modal-overlay',onClick:(e)=>{if(e.target===e.currentTarget)this.setState({showSettings:false});}},
+      el('div','modal-card',
+        el('div','modal-head', h('b',null,'連接 Google 試算表'), h('button',{className:'modal-x',onClick:()=>this.setState({showSettings:false})},'×')),
+        h('div',{style:{padding:'18px 20px'}},
+          h('p',{style:{fontSize:13,color:'var(--sub)',lineHeight:1.6,marginBottom:12}},'貼上你部署 Apps Script 後取得的網址（以 /exec 結尾）。連結會儲存在這台電腦的瀏覽器。'),
+          h('input',{className:'input',defaultValue:cur,placeholder:'https://script.google.com/macros/s/.../exec',onChange:e=>{val=e.target.value;}})),
+        el('div','modal-foot',
+          h('button',{className:'btn btn-ghost',onClick:()=>this.saveUrl('')},'清除'),
+          h('button',{className:'btn btn-primary',onClick:()=>this.saveUrl(val)}, icon('check'),'儲存並連線'))
+      )
+    );
+  }
+
+  renderEntry(){
+    const D=this.D, roster=(this.state.roster||[]).filter(s=>s.active!==false);
+    const sel=this.state.selStudent;
+    return el('div','wrap narrow fade',
+      el('div','page-head',
+        el('div',null, el('div','eyebrow','臨床教師工作區'),
+          h('h1',null,'即時評核'),
+          h('p',null,'選擇受評學員後，針對任一 EPA 立即評核；送出後寫入該學員的 Google 試算表頁籤並產生報告。'))
+      ),
+      this.state.sheetMsg? h('div',{className:'banner'}, icon('flag'), h('span',null,this.state.sheetMsg)) : null,
+      el('div','card form-sec',
+        h('h3',null, h('span',{className:'n'},'1'),'選擇受評學員'),
+        !this.state.rosterLoaded? h('p',{style:{padding:'0 22px',color:'var(--muted)'}},'載入名冊中…')
+        : roster.length? h('div',{style:{padding:'0 22px',display:'flex',flexDirection:'column',gap:10}},
+            roster.map(s=>h('button',{key:s.name,className:'stu-pick'+(sel===s.name?' on':''),onClick:()=>this.setState({selStudent:s.name})},
+              h('div',{className:'avatar',style:{width:36,height:36,fontSize:15,borderRadius:10}}, s.name[0]),
+              h('div',{style:{flex:1,textAlign:'left'}}, h('b',null,s.name), s.stage? h('span',{className:'chip stage',style:{marginLeft:8}},s.stage):null),
+              sel===s.name? icon('check'):null)))
+        : h('p',{style:{padding:'0 22px',color:'var(--muted)'}},'名冊尚無在訓學員。請負責老師至右上「⚿ 名冊管理」新增學員。'),
+        h('p',{style:{padding:'10px 22px 0',fontSize:12,color:'var(--muted)'}},'找不到學員？為避免姓名輸錯，新增學員請統一由負責老師於「⚿ 名冊管理」處理。')
+      ),
+      h('div',{style:{display:'flex',justifyContent:'flex-end',padding:'4px 2px'}},
+        h('button',{className:'btn btn-primary btn-lg',onClick:()=>this.beginAssessment()}, icon('plus'),'開始評核'))
+    );
+  }
+
+  beginAssessment(){
+    const sel=this.state.selStudent;
+    if(!sel){ this.toast('請選擇受評學員'); return; }
+    const s=this.state.roster.find(x=>x.name===sel);
+    const name=sel, stage=s?(s.stage||'PGY1'):'PGY1';
+    const lastEv=(()=>{try{return localStorage.getItem('epa_peds_last_evaluator')||'';}catch(e){return '';}})();
+    const today=new Date();
+    this.setState({ view:'form', draft:{
+      epaId:'EPA1', studentName:name, stage, date: today.toISOString().slice(0,10), evaluator:lastEv,
+      context:{ diagnosis:[], diagnosisOther:'', assessItems:[], source:'OPD', dept:'', ward:'', reportType:'初評報告' },
+      overall:null, items:[], qualitative:''
+    }});
+  }
+
+  setDraft(mut){
+    const d = JSON.parse(JSON.stringify(this.state.draft));
+    mut(d);
+    this.setState({draft:d});
+  }
+  toggleArr(arr,v){ const i=arr.indexOf(v); if(i<0)arr.push(v); else arr.splice(i,1); }
+  pickEpa(id){
+    this.setDraft(d=>{ d.epaId=id; d.overall=null; d.items=[]; });
+  }
+  draftDone(){
+    const d=this.state.draft; const epa=this.D.epaById[d.epaId];
+    let filled = d.items.filter(x=>x).length;
+    const qualSet = !!(d.qualitative && d.qualitative.trim());
+    return {filled, total: epa.items.length, overallSet: !!d.overall, itemsAll: filled===epa.items.length, qualSet};
+  }
+  // 台灣時間（GMT+8）時間戳記：YYYY-MM-DD HH:mm:ss
+  nowTW(){
+    const d=new Date(Date.now()+8*3600*1000);
+    const p=n=>String(n).padStart(2,'0');
+    return d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate())+' '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds());
+  }
+  buildSheetRow(rec){
+    const D=this.D, epa=D.epaById[rec.epaId];
+    const items = epa.items.map((it,i)=>{ const c=rec.items[i]; return (i+1)+'.'+it.slice(0,10)+'='+(c||'NA'); }).join(' ｜ ');
+    return {
+      header:['送出時間','評核日期','EPA','EPA名稱','期別','評核者','個案來源','科別','病房','報告類型','診斷情境','評估面向','整體代碼','整體數值(1-5)','各細項評分','質性回饋'],
+      row:[ this.nowTW(), rec.date, 'EPA'+epa.no, epa.title, rec.stage, rec.evaluator,
+        rec.context.source||'', rec.context.dept||'', rec.context.ward||'',
+        epa.id==='EPA4'?(rec.context.reportType||''):'',
+        this.contextLabelsOf(rec).join('、'),
+        (rec.context.assessItems||[]).join('、'),
+        rec.overall, D.valByCode[rec.overall]??'', items, rec.qualitative||'' ]
+    };
+  }
+
+  submitAssessment(){
+    const d=this.state.draft; const D=this.D; const epa=D.epaById[d.epaId];
+    if(!d.studentName){ this.toast('缺少受評學員'); return; }
+    if(!d.evaluator || !d.evaluator.trim()){ this.toast('請先選擇評核者（老師姓名）'); return; }
+    if(!d.overall){ this.toast('請先評定「整體任務」之信賴等級'); return; }
+    const missing = epa.items.findIndex((_,i)=>!d.items[i]);
+    if(missing>=0){ this.toast('信賴等級請全部填寫：第 '+(missing+1)+' 項尚未評定（不適用請選 NA）'); return; }
+    if(!d.qualitative || !d.qualitative.trim()){ this.toast('請填寫「其他質性回饋」'); return; }
+    const ev=d.evaluator.trim();
+    try{ localStorage.setItem('epa_peds_last_evaluator', ev); }catch(e){}
+    const rec={ ...JSON.parse(JSON.stringify(d)), evaluator:ev };
+    const built=this.buildSheetRow(rec);
+    const payload={ action:'submit', student:d.studentName, stage:d.stage, header:built.header, row:built.row };
+
+    if(!this.sheetUrl){
+      this.setState({report:rec, view:'report'});
+      this.toast('離線模式：已產生報告（未寫入試算表）');
+      return;
+    }
+    this.setState({submitting:true});
+    this.sheetPost(payload).then(r=>{
+      if(r && r.ok){
+        let roster=this.state.roster.slice();
+        if(!roster.some(s=>s.name===d.studentName)) roster.push({name:d.studentName, stage:d.stage, active:true});
+        this.setState({submitting:false, report:rec, view:'report', roster});
+        this.toast(r.mode==='updated'
+          ? '已覆蓋 '+d.studentName+' 同日同 EPA 的原紀錄，並產生報告'
+          : '已寫入 '+d.studentName+' 的試算表頁籤，並產生報告');
+      } else {
+        this.setState({submitting:false});
+        this.toast('寫入失敗：'+((r&&r.error)||'請稍後再試'));
+      }
+    }).catch(e=>{
+      this.setState({submitting:false});
+      this.toast('連線失敗，請檢查網路與試算表設定');
+    });
+  }
+
+  scaleRow(value, onPick){
+    const D=this.D;
+    return el('div','scale',
+      D.SCALE.map(s=>h('button',{key:s.code,title:s.label,className:value===s.code?'on':'',onClick:()=>onPick(s.code)},
+        s.code, h('small',null,s.lv))),
+      h('button',{key:'NA',title:D.NA.label,className:'na'+(value==='NA'?' on':''),onClick:()=>onPick('NA')},'NA')
+    );
+  }
+
+  renderForm(){
+    const D=this.D, d=this.state.draft, epa=D.epaById[d.epaId];
+    const prog=this.draftDone();
+    const ctxCount = this.contextLabelsOf(d).length;
+    return el('div','wrap narrow fade',
+      h('button',{className:'btn btn-ghost btn-sm no-print',style:{marginBottom:16},onClick:()=>this.setState({view:'entry'})}, icon('back'),'返回選擇學員'),
+      el('div','page-head',
+        el('div',null, el('div','eyebrow','即時評核 · Ad-hoc EPA'),
+          h('h1',null,'新增評核紀錄'),
+          h('p',null,'在工作情境中觀察學員後填寫；可隨時切換 EPA。')),
+      ),
+      el('div','card form-sec',
+        h('h3',null, h('span',{className:'n'},'A'),'選擇 EPA 項目'),
+        el('div','epa-tiles',
+          D.EPAS.map(e=>h('button',{key:e.id,className:'epa-tile'+(d.epaId===e.id?' on':''),onClick:()=>this.pickEpa(e.id)},
+            el('div','tag','EPA '+e.no),
+            el('div','tt',e.title),
+            el('div','ds',e.desc)))
+        )
+      ),
+      el('div','card form-sec',
+        h('h3',null, h('span',{className:'n'},'B'),'受評對象與情境'),
+        el('div','field-row',
+          el('div','field', h('label',null,'受評學員'),
+            h('div',{className:'input',style:{display:'flex',alignItems:'center',gap:8,background:'var(--surface2)'}},
+              h('b',null,d.studentName), h('span',{className:'chip stage'},d.stage))),
+          el('div','field', h('label',null,'評核日期'),
+            h('input',{className:'input',type:'date',value:d.date,onChange:e=>this.setDraft(x=>{x.date=e.target.value;})})),
+          el('div','field', h('label',null,'評核者（老師姓名）'),
+            (this.teachers().length
+              ? h('select',{className:'input',value:d.evaluator,onChange:e=>this.setDraft(x=>{x.evaluator=e.target.value;})},
+                  h('option',{value:''},'— 請選擇 —'),
+                  this.teachers().map(t=>h('option',{key:t,value:t},t)))
+              : h('input',{className:'input',value:d.evaluator,placeholder:'輸入您的姓名',onChange:e=>this.setDraft(x=>{x.evaluator=e.target.value;})})))
+        ),
+        epa.id==='EPA4'? h('div',{className:'field',style:{marginTop:14}},
+          h('label',null,'報告類型'),
+          h('div',{className:'seg'}, epa.reportTypes.map(rt=>h('button',{key:rt,className:d.context.reportType===rt?'on':'',onClick:()=>this.setDraft(x=>{x.context.reportType=rt;})},rt)))
+        ):null,
+        h('div',{className:'field-row',style:{marginTop:14}},
+          el('div','field', h('label',null,'個案來源'),
+            h('div',{className:'seg'}, D.SOURCES.map(sc=>h('button',{key:sc,className:d.context.source===sc?'on':'',onClick:()=>this.setDraft(x=>{x.context.source=sc;})},sc)))),
+          el('div','field', h('label',null,'科別'),
+            (function(self){
+              const dept=d.context.dept||'', other=!!d.context._deptOther || (dept!=='' && !D.DEPTS.includes(dept));
+              const selVal = other? '其它' : dept;
+              return h('div',null,
+                h('select',{className:'input',value:selVal,onChange:e=>self.setDraft(x=>{ if(e.target.value==='其它'){x.context._deptOther=true;x.context.dept='';} else {x.context._deptOther=false;x.context.dept=e.target.value;} })},
+                  h('option',{value:''},'— 請選擇科別 —'),
+                  D.DEPTS.filter(dp=>dp!=='其他'&&dp!=='其它').map(dp=>h('option',{key:dp,value:dp},dp)),
+                  h('option',{value:'其它'},'其他（自行輸入）')),
+                other? h('input',{className:'input',style:{marginTop:8},value:dept,placeholder:'請輸入科別',onChange:e=>self.setDraft(x=>{x.context.dept=e.target.value;x.context._deptOther=true;})}):null);
+            })(this)),
+          el('div','field', h('label',null,'病房'),
+            h('input',{className:'input',value:d.context.ward,placeholder:'例：12B（OPD 可留空）',onChange:e=>this.setDraft(x=>{x.context.ward=e.target.value;})}))
+        ),
+        h('div',{style:{marginTop:14}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:9,marginBottom:7,flexWrap:'wrap'}},
+            h('label',{style:{fontSize:'12.5px',fontWeight:700,color:'var(--sub)'}},'個案診斷（情境）'),
+            h('span',{style:{fontSize:'11.5px',color:'var(--muted)'}},'完成訓練需累計至少 '+epa.minCtx+' 種情境'),
+            ctxCount? h('span',{className:'chip stage'}, '本次選 '+ctxCount+' 種'):null
+          ),
+          el('div','checks', D.DIAGNOSES.map(dg=>{
+            const on=d.context.diagnosis.includes(dg);
+            return h('button',{key:dg,className:'checkpill'+(on?' on':''),onClick:()=>this.setDraft(x=>this.toggleArr(x.context.diagnosis,dg))},
+              h('span',{className:'box'}, on?icon('check'):null), dg);
+          })),
+          d.context.diagnosis.includes('其它')? h('input',{className:'input',style:{marginTop:10},value:d.context.diagnosisOther,placeholder:'其它診斷：請自行輸入',onChange:e=>this.setDraft(x=>{x.context.diagnosisOther=e.target.value;})}):null
+        ),
+        epa.assessItems? h('div',{style:{marginTop:14}},
+          h('label',{style:{display:'block',fontSize:'12.5px',fontWeight:700,color:'var(--sub)',marginBottom:6}},'評估面向'),
+          el('div','checks', D.ASSESS_ITEMS.map(ai=>{
+            const on=d.context.assessItems.includes(ai);
+            return h('button',{key:ai,className:'checkpill'+(on?' on':''),onClick:()=>this.setDraft(x=>this.toggleArr(x.context.assessItems,ai))},
+              h('span',{className:'box'}, on?icon('check'):null), ai);
+          }))
+        ):null
+      ),
+      el('div','card form-sec',
+        h('h3',null, h('span',{className:'n'},'C'),'信賴等級評定', h('span',{style:{color:'var(--warn)',fontSize:13,marginLeft:6}},'＊每項必填')),
+        el('div','hint','「觀察學員後，下次遇到類似情境時，您認為此學員勝任之程度為何？」'),
+        h('div',{style:{padding:'0 22px 4px'}},
+          el('div','rate-item',
+            el('div','rate-q overall', h('span',{className:'qi'},'★'), h('div',null,h('b',null,'整體任務'),h('div',{style:{fontSize:12,color:'var(--muted)',marginTop:2}},'此 EPA 的整體可信賴程度（必填）')) ),
+            this.scaleRow(d.overall, code=>this.setDraft(x=>{x.overall=code;}))
+          ),
+          epa.items.map((q,i)=>h('div',{key:i,className:'rate-item'},
+            el('div','rate-q', h('span',{className:'qi'},i+1), h('div',null,q)),
+            this.scaleRow(d.items[i], code=>this.setDraft(x=>{ while(x.items.length<epa.items.length)x.items.push(undefined); x.items[i]=code; }))
+          ))
+        )
+      ),
+      el('div','card form-sec',
+        h('h3',null, h('span',{className:'n'},'D'),'其他質性回饋', h('span',{style:{color:'var(--warn)',fontSize:13,marginLeft:6}},'＊必填')),
+        h('textarea',{className:'input',value:d.qualitative,placeholder:'具體描述學員表現、優點與可改善處…',onChange:e=>this.setDraft(x=>{x.qualitative=e.target.value;})})
+      ),
+      el('div','actionbar no-print',
+        el('div','summary','信賴等級 ',h('b',null,prog.filled+' / '+prog.total),'　整體 ', prog.overallSet? h('b',{style:{color:'var(--a)'}},d.overall) : h('span',{style:{color:'var(--warn)'}},'未定'),'　回饋 ', prog.qualSet? h('b',{style:{color:'var(--a)'}},'✓') : h('span',{style:{color:'var(--warn)'}},'未填')),
+        h('button',{className:'btn btn-ghost',onClick:()=>this.setState({view:'entry'})},'取消'),
+        h('button',{className:'btn btn-primary',disabled:this.state.submitting,onClick:()=>this.submitAssessment()}, icon('check'), this.state.submitting?'送出中…':'送出並產生報告')
+      )
+    );
+  }
+  lvColor(v){
+    if(v==null) return {bg:'#ECE5D7',fg:'#8A8275'};
+    if(v<2) return {bg:'#EAD3C8',fg:'#9c4a32'};
+    if(v<3) return {bg:'#F1E2C4',fg:'#8a6420'};
+    if(v<4) return {bg:'var(--aT2)',fg:'var(--aInk)'};
+    return {bg:'var(--a)',fg:'#fff'};
+  }
+  ctxSummary(rec){
+    const c=rec.context, parts=[];
+    const dl=this.contextLabelsOf(rec);
+    if(dl.length) parts.push('診斷：'+dl.join('、'));
+    if(c.assessItems&&c.assessItems.length) parts.push('評估面向：'+c.assessItems.join('、'));
+    return parts;
+  }
+  downloadFile(name, text, type){
+    const blob=new Blob(['\ufeff'+text],{type:type||'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+  }
+  exportReportCSV(rec){
+    const D=this.D, epa=D.epaById[rec.epaId];
+    const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+    const L=[];
+    L.push(['臺北醫學大學附設醫院 兒童職能治療 EPA 即時評核報告'].map(q).join(','));
+    L.push([]);
+    L.push(['EPA',epa.no+' '+epa.title].map(q).join(','));
+    if(epa.id==='EPA4') L.push(['報告類型',rec.context.reportType].map(q).join(','));
+    L.push(['評核日期',rec.date].map(q).join(','));
+    L.push(['被評核者',rec.studentName+'（'+rec.stage+'）'].map(q).join(','));
+    L.push(['評核者',rec.evaluator].map(q).join(','));
+    this.ctxSummary(rec).forEach(p=>{const i=p.indexOf('：');L.push([p.slice(0,i),p.slice(i+1)].map(q).join(','));});
+    L.push(['個案來源',rec.context.source+(rec.context.dept?' / '+rec.context.dept:'')+(rec.context.ward?' / '+rec.context.ward:'')].map(q).join(','));
+    L.push([]);
+    L.push(['評量項目','信賴等級代碼','數值(1-5)','說明'].map(q).join(','));
+    L.push(['整體任務',rec.overall,D.valByCode[rec.overall]??'',D.labelForCode(rec.overall)].map(q).join(','));
+    epa.items.forEach((it,i)=>{const c=rec.items[i];L.push([(i+1)+'. '+it,c||'NA',D.valByCode[c]??'',D.labelForCode(c)].map(q).join(','));});
+    L.push([]);
+    L.push(['質性回饋',rec.qualitative].map(q).join(','));
+    this.downloadFile('EPA'+epa.no+'_'+rec.studentName+'_'+rec.date+'.csv', L.join('\r\n'));
+    this.toast('已下載 Excel(CSV) 檔');
+  }
+
+  renderReport(){
+    const D=this.D, rec=this.state.report;
+    if(!rec) return el('div','wrap','（無報告）');
+    const epa=D.epaById[rec.epaId];
+    const ov=D.valByCode[rec.overall], oc=this.lvColor(ov);
+    const target=D.TARGET[rec.stage];
+    const meet = ov!=null && ov>=target;
+    return el('div','wrap narrow fade',
+      h('div',{className:'no-print',style:{display:'flex',gap:10,flexWrap:'wrap',marginBottom:18,alignItems:'center'}},
+          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.setState({view:'entry',selStudent:''})}, icon('back'),'再評一位'),
+          h('div',{style:{flex:1}}),
+          h('button',{className:'btn btn-soft btn-sm',onClick:()=>this.exportReportCSV(rec)}, icon('excel'),'下載 Excel'),
+          h('button',{className:'btn btn-primary btn-sm',onClick:()=>window.print()}, icon('print'),'列印 / 存 PDF')
+      ),
+      el('div','report-paper',
+        el('div','report-band',
+          el('div','org','臺北醫學大學附設醫院 · 兒童職能治療可信賴專業活動評核'),
+          h('h2',{className:'serif'},'EPA '+epa.no+' ｜ '+epa.title),
+          el('div','sub','即時評核（Ad-hoc EPA）單次評核報告'+(epa.id==='EPA4'&&rec.context.reportType?'　·　'+rec.context.reportType:''))
+        ),
+        el('div','report-body',
+          el('div','rep-meta',
+            el('div',null, el('div','k','評核日期'), el('div','v',rec.date)),
+            el('div',null, el('div','k','被評核者'), el('div','v',rec.studentName+'（'+rec.stage+'）')),
+            el('div',null, el('div','k','評核者'), el('div','v',rec.evaluator)),
+            el('div',null, el('div','k','個案來源'), el('div','v',rec.context.source+(rec.context.dept?' · '+rec.context.dept:'')+(rec.context.ward?' · '+rec.context.ward:''))),
+            ...this.ctxSummary(rec).map((p,i)=>{const idx=p.indexOf('：');return el('div',null, el('div','k',p.slice(0,idx)), el('div','v',p.slice(idx+1)));})
+          ),
+          el('div','rep-overall',
+            h('div',{className:'big',style:{color:oc.fg==='#fff'?'var(--aInk)':oc.fg}}, rec.overall),
+            el('div',null,
+              el('div','lbl','整體任務信賴等級　·　'+D.lvForCode(rec.overall),
+                h('small',null,D.labelForCode(rec.overall))),
+              h('div',{style:{marginTop:8}},
+                h('span',{className:'chip '+(meet?'stage':'gold')}, meet?'已達期望等級':'期望等級 '+D.TARGET_LABEL[rec.stage]+'（'+(ov!=null?(target-ov>0?'尚差 '+(target-ov)+' 級':'已達標'):'—')+'）'))
+            )
+          ),
+          h('table',{className:'rep-table'},
+            h('thead',null,h('tr',null, h('th',null,'評量項目'), h('th',{style:{textAlign:'center'}},'信賴等級'))),
+            h('tbody',null,
+              epa.items.map((it,i)=>{
+                const c=rec.items[i], v=D.valByCode[c], col=this.lvColor(v);
+                return h('tr',{key:i},
+                  h('td',null, h('span',{style:{color:'var(--muted)',fontWeight:700,marginRight:6}},(i+1)), it),
+                  h('td',{className:'lv'}, h('span',{className:'lvpill',style:{background:col.bg,color:col.fg}}, (c&&c!=='NA')? c+'　'+(D.lvForCode(c)):'未評估')));
+              })
+            )
+          ),
+          rec.qualitative? h('div',{style:{marginTop:20}},
+            h('div',{style:{fontSize:'11.5px',color:'var(--muted)',fontWeight:700,marginBottom:7}},'其他質性回饋'),
+            el('div','qbox',rec.qualitative)
+          ):null,
+          h('div',{style:{marginTop:22,fontSize:'11px',color:'var(--muted)',lineHeight:1.7}},
+            '信賴等級量尺：1a 不足以評量｜1b 僅能觀察｜2a 逐步共同操作｜2b 必要時協助｜3a 事後逐項確認｜3b 事後重點確認｜3c 必要時知會教師｜4 獨立執行｜5 可監督資淺學員。',
+            h('br'),'參考資料來源：社團法人臺灣職能治療學會可信賴專業活動。')
+        )
+      )
+    );
+  }
+}
+</script>
+</body>
+</html>

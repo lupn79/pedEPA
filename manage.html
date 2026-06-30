@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="epa-data-peds.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ECE6F1; --bg2:#E1D9EA; --surface:#FCFAFE; --surface2:#F4EFF9;
+    --ink:#2A2531; --sub:#615869; --muted:#988EA4; --line:#E4DCEE; --lineS:#D4C8E2;
+    --a:#7A4F94; --aD:#5D3A73; --aT:#F0E9F5; --aT2:#E2D3EE; --aInk:#48305a;
+    --gold:#C08A3A; --goldT:#F4EBD8;
+    --peer:#4E8A86;
+    --warn:#B0573f;
+    --shadow:0 1px 2px rgba(45,32,60,.05), 0 6px 20px rgba(45,32,60,.07);
+    --shadowS:0 1px 2px rgba(45,32,60,.06);
+    --r:14px;
+  }
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .app-root{min-height:100vh}
+  .serif{font-family:"Noto Serif TC","Noto Sans TC",serif}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--lineS);border-radius:6px;border:2px solid var(--bg)}
+
+  .shell{min-height:100vh;display:flex;flex-direction:column}
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(252,250,254,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:16px;padding:10px 20px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,var(--a),var(--aD));color:#fff;display:grid;place-items:center;font-weight:900;flex:none;box-shadow:0 3px 8px rgba(94,58,114,.28)}
+  .brand-mark span{font-size:17px;letter-spacing:.5px}
+  .brand-txt{min-width:0}
+  .brand-txt b{font-size:15px;font-weight:700;display:block;letter-spacing:.2px;white-space:nowrap}
+  .brand-txt small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .topbar-spacer{flex:1}
+  .role-seg{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px}
+  .role-seg button{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:.15s}
+  .role-seg button .ic{width:16px;height:16px;opacity:.7}
+  .role-seg button.on{background:var(--surface);color:var(--aInk);box-shadow:var(--shadowS)}
+  .role-seg button.on .ic{opacity:1}
+
+  .body{flex:1;display:flex;min-height:0}
+  .sidebar{width:236px;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:6px}
+  .side-h{font-size:11px;font-weight:700;letter-spacing:1.2px;color:var(--muted);padding:6px 10px 2px;text-transform:uppercase}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--sub);transition:.14s;text-align:left;width:100%}
+  .nav-item .ic{width:18px;height:18px;opacity:.7;flex:none}
+  .nav-item:hover{background:var(--surface2)}
+  .nav-item.on{background:var(--aT);color:var(--aInk)}
+  .nav-item.on .ic{opacity:1}
+  .nav-item .badge{margin-left:auto;background:var(--bg2);color:var(--sub);font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px}
+  .nav-item.on .badge{background:var(--aT2);color:var(--aInk)}
+  .side-foot{margin-top:auto;font-size:11px;color:var(--muted);padding:10px;line-height:1.6;border-top:1px solid var(--line)}
+
+  .main{flex:1;min-width:0;overflow-x:hidden}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 64px}
+  .wrap.narrow{max-width:880px}
+
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .page-head h1{font-size:25px;font-weight:900;letter-spacing:.3px}
+  .page-head p{color:var(--sub);font-size:14px;margin-top:5px;max-width:62ch}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;margin-bottom:7px}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:11px;font-size:14px;font-weight:700;transition:.15s;white-space:nowrap}
+  .btn .ic{width:17px;height:17px}
+  .btn-primary{background:var(--a);color:#fff;box-shadow:0 3px 10px rgba(94,58,114,.22)}
+  .btn-primary:hover{background:var(--aD);transform:translateY(-1px)}
+  .btn-ghost{background:var(--surface);border:1px solid var(--lineS);color:var(--sub)}
+  .btn-ghost:hover{border-color:var(--a);color:var(--aInk)}
+  .btn-soft{background:var(--aT);color:var(--aInk)}
+  .btn-soft:hover{background:var(--aT2)}
+  .btn-sm{padding:8px 13px;font-size:13px;border-radius:9px}
+  .btn-lg{padding:14px 24px;font-size:15px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadowS)}
+  .grid{display:grid;gap:16px}
+  .stu-grid{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .stu-card{padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;transition:.16s;cursor:pointer}
+  .stu-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--lineS)}
+  .stu-top{display:flex;align-items:center;gap:13px}
+  .avatar{width:46px;height:46px;border-radius:13px;background:var(--aT);color:var(--aInk);display:grid;place-items:center;font-weight:900;font-size:18px;flex:none}
+  .stu-name{font-size:16px;font-weight:800}
+  .stu-meta{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--sub);border:1px solid var(--line)}
+  .chip.stage{background:var(--aT);color:var(--aInk);border-color:transparent}
+  .chip.gold{background:var(--goldT);color:#7d5a20;border-color:transparent}
+
+  .mini-stats{display:flex;gap:10px}
+  .mini{flex:1;background:var(--surface2);border-radius:10px;padding:9px 11px}
+  .mini .k{font-size:11px;color:var(--muted);font-weight:600}
+  .mini .v{font-size:19px;font-weight:900;margin-top:1px;line-height:1.1}
+  .mini .v small{font-size:11px;font-weight:600;color:var(--muted)}
+
+  .progressbar{height:7px;border-radius:6px;background:var(--bg2);overflow:hidden}
+  .progressbar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--a),var(--aD))}
+
+  .epa-dots{display:flex;gap:6px;flex-wrap:wrap}
+  .epa-dot{flex:1;min-width:54px;border-radius:9px;padding:7px 6px;text-align:center;background:var(--surface2);border:1px solid var(--line)}
+  .epa-dot .lab{font-size:10.5px;color:var(--muted);font-weight:700}
+  .epa-dot .num{font-size:14px;font-weight:900;margin-top:1px}
+  .epa-dot.na .num{color:var(--muted)}
+
+  .seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px;flex-wrap:wrap}
+  .seg button{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub)}
+  .seg button.on{background:var(--surface);color:var(--aInk);box-shadow:var(--shadowS)}
+
+  .form-sec{padding:20px 22px;margin-bottom:16px}
+  .form-sec h3{font-size:15px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:9px}
+  .form-sec h3 .n{width:24px;height:24px;border-radius:8px;background:var(--aT);color:var(--aInk);display:grid;place-items:center;font-size:13px;font-weight:900;flex:none}
+  .form-sec .hint{font-size:12.5px;color:var(--muted);margin-bottom:15px;padding-left:33px}
+  .field-row{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:6px}
+  .input,select.input{width:100%;padding:10px 12px;border:1px solid var(--lineS);border-radius:10px;background:var(--surface);font-size:14px;transition:.14s}
+  .input:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px var(--aT2)}
+  textarea.input{resize:vertical;min-height:90px;line-height:1.6}
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .checkpill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:10px;border:1px solid var(--lineS);background:var(--surface);font-size:13px;font-weight:600;color:var(--sub);transition:.13s}
+  .checkpill:hover{border-color:var(--a)}
+  .checkpill.on{background:var(--aT);border-color:var(--a);color:var(--aInk)}
+  .checkpill .box{width:15px;height:15px;border-radius:5px;border:1.5px solid var(--lineS);display:grid;place-items:center}
+  .checkpill.on .box{background:var(--a);border-color:var(--a)}
+
+  .epa-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px}
+  .epa-tile{padding:14px;border-radius:12px;border:1.5px solid var(--lineS);background:var(--surface);text-align:left;transition:.15s}
+  .epa-tile:hover{border-color:var(--a)}
+  .epa-tile.on{border-color:var(--a);background:var(--aT)}
+  .epa-tile .tag{font-size:11px;font-weight:800;color:var(--a);letter-spacing:.5px}
+  .epa-tile .tt{font-size:14.5px;font-weight:800;margin-top:4px}
+  .epa-tile .ds{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  .rate-item{padding:15px 0;border-top:1px solid var(--line)}
+  .rate-item:first-child{border-top:none}
+  .rate-q{display:flex;gap:11px;font-size:13.5px;line-height:1.55;margin-bottom:11px}
+  .rate-q .qi{flex:none;width:22px;height:22px;border-radius:7px;background:var(--surface2);color:var(--sub);font-weight:800;font-size:12px;display:grid;place-items:center;margin-top:1px}
+  .rate-q.overall .qi{background:var(--aD);color:#fff}
+  .scale{display:flex;gap:5px;flex-wrap:wrap}
+  .scale button{min-width:42px;padding:8px 4px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);font-size:13px;font-weight:800;color:var(--sub);transition:.12s;text-align:center;line-height:1.15}
+  .scale button small{display:block;font-size:8.5px;font-weight:700;color:var(--muted);letter-spacing:.3px}
+  .scale button:hover{border-color:var(--a)}
+  .scale button.on{background:var(--a);color:#fff;border-color:var(--a);box-shadow:0 2px 7px rgba(94,58,114,.3)}
+  .scale button.on small{color:rgba(255,255,255,.85)}
+  .scale button.na.on{background:var(--muted);border-color:var(--muted)}
+
+  .actionbar{position:sticky;bottom:0;z-index:20;background:rgba(252,250,254,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);
+    margin:0 -24px -64px;padding:14px 24px;display:flex;align-items:center;gap:14px;justify-content:flex-end;flex-wrap:wrap}
+  .actionbar .summary{margin-right:auto;font-size:13px;color:var(--sub)}
+  .actionbar .summary b{color:var(--aInk);font-size:15px}
+
+  .chart-card{padding:18px 20px}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+  .chart-head h3{font-size:15px;font-weight:800}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);font-weight:600}
+  .legend i{display:inline-block;width:13px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .legend i.dash{height:0;border-top:2px dashed var(--gold);width:15px}
+
+  .report-paper{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .report-band{background:linear-gradient(135deg,var(--a),var(--aD));color:#fff;padding:24px 30px}
+  .report-band .org{font-size:12.5px;opacity:.85;letter-spacing:1px}
+  .report-band h2{font-size:22px;font-weight:900;margin-top:4px}
+  .report-band .sub{font-size:13px;opacity:.9;margin-top:7px}
+  .report-body{padding:26px 30px}
+  .rep-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 24px;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .rep-meta .k{font-size:11.5px;color:var(--muted);font-weight:700}
+  .rep-meta .v{font-size:14px;font-weight:700;margin-top:2px}
+  .rep-overall{display:flex;align-items:center;gap:20px;background:var(--aT);border-radius:12px;padding:18px 22px;margin-bottom:22px;flex-wrap:wrap}
+  .rep-overall .big{font-size:40px;font-weight:900;color:var(--aInk);line-height:1;font-family:"Noto Serif TC",serif}
+  .rep-overall .lbl{font-size:13px;color:var(--aInk);font-weight:700}
+  .rep-overall .lbl small{display:block;color:var(--sub);font-weight:600;margin-top:3px;font-size:12px}
+  table.rep-table{width:100%;border-collapse:collapse;font-size:13px}
+  table.rep-table th,table.rep-table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.rep-table th{font-size:11.5px;color:var(--muted);font-weight:700;background:var(--surface2)}
+  table.rep-table td.lv{text-align:center;width:120px;font-weight:800;white-space:nowrap}
+  .lvpill{display:inline-block;padding:3px 11px;border-radius:20px;font-weight:800;font-size:12.5px}
+  .qbox{background:var(--surface2);border-radius:11px;padding:15px 17px;font-size:13.5px;line-height:1.7;color:var(--sub)}
+
+  .tablewrap{overflow-x:auto;border-radius:var(--r)}
+  table.data{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+  table.data th,table.data td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  table.data thead th{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;background:var(--surface2);position:sticky;top:0}
+  table.data tbody tr{transition:.12s;cursor:pointer}
+  table.data tbody tr:hover{background:var(--surface2)}
+  table.data td.num{font-weight:800;font-variant-numeric:tabular-nums}
+  table.data th.selcol,table.data td.selcol{width:30px;text-align:center;padding-left:14px;padding-right:0}
+  .selbox{width:18px;height:18px;border-radius:5px;border:1.6px solid var(--lineS);display:inline-grid;place-items:center;cursor:pointer;transition:.12s;vertical-align:middle}
+  .selbox:hover{border-color:var(--a)}
+  .selbox.on{background:var(--a);border-color:var(--a);color:#fff}
+  .selbox svg{width:12px;height:12px}
+  table.data tbody tr.selrow{background:var(--aT)}
+  table.data tbody tr.selrow:hover{background:var(--aT2)}
+  .cmp-dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .modal-overlay{position:fixed;inset:0;z-index:80;background:rgba(44,40,34,.42);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .2s ease}
+  .modal-card{background:var(--surface);border-radius:16px;box-shadow:0 18px 50px rgba(44,40,34,.28);width:100%;max-width:460px;overflow:hidden}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);font-size:16px}
+  .modal-x{font-size:22px;line-height:1;color:var(--muted);padding:0 4px}
+  .modal-x:hover{color:var(--ink)}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface2)}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+  .kpi{padding:16px 18px}
+  .kpi .k{font-size:12px;color:var(--muted);font-weight:700}
+  .kpi .v{font-size:30px;font-weight:900;margin-top:5px;line-height:1;font-family:"Noto Serif TC",serif}
+  .kpi .v small{font-size:13px;color:var(--sub);font-weight:700;font-family:"Noto Sans TC"}
+  .kpi .d{font-size:11.5px;color:var(--muted);margin-top:7px}
+
+  .empty{text-align:center;padding:54px 20px;color:var(--muted)}
+  .empty .ic{width:46px;height:46px;opacity:.5;margin:0 auto 12px}
+
+  .feed-item{padding:16px 18px;border-left:3px solid var(--a);background:var(--surface2);border-radius:0 11px 11px 0;margin-bottom:12px}
+  .feed-item .fh{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+  .feed-item .fh b{color:var(--aInk);font-weight:700}
+  .feed-item p{font-size:13.5px;line-height:1.7;color:var(--sub)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  @keyframes fade{from{transform:translateY(8px)}to{transform:translateY(0)}}
+  .fade{animation:fade .28s ease}
+
+  @media(max-width:860px){
+    .sidebar{display:none}
+    .topbar{padding:9px 14px;gap:10px;flex-wrap:wrap}
+    .role-seg button span.t{display:none}
+    .role-seg button{padding:7px 11px}
+    .wrap{padding:20px 15px 80px}
+    .page-head h1{font-size:21px}
+    .actionbar{margin-left:-15px;margin-right:-15px;padding:12px 15px}
+  }
+  @media(max-width:560px){
+    .brand-txt small{display:none}
+    .mini-stats{flex-wrap:wrap}
+  }
+
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff}
+    .topbar,.sidebar,.tabsnav,.actionbar,.no-print{display:none !important}
+    .wrap{padding:0;max-width:none}
+    .report-paper{border:none;box-shadow:none;border-radius:0}
+    .report-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .lvpill,.rep-overall,.report-band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</helmet>
+<div class="app-root">{{ app }}</div>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<rect width="100" height="100" rx="18" fill="#7A4F94"/>
+<polyline points="26,66 44,52 58,60 76,34" fill="none" stroke="#F0E9F5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="76" cy="34" r="6" fill="#F0E9F5"/>
+</svg>
+</template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;grape&quot;,&quot;rose&quot;,&quot;ocean&quot;],&quot;default&quot;:&quot;grape&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;sheetUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const h = React.createElement;
+function el(tag, cls, ...kids){ return h(tag, cls ? {className:cls} : null, ...kids); }
+
+const IC = {
+  teacher:'M4 19v-1a4 4 0 0 1 4-4h3M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM14.5 14.5l2.5 2.5 4-4',
+  student:'M22 10 12 5 2 10l10 5 10-5ZM6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5',
+  manager:'M3 13a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6H3v-6ZM10 8a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v11h-4V8ZM17 4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v15h-4V4Z',
+  list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  plus:'M12 5v14M5 12h14',
+  chart:'M3 3v18h18M7 14l3-3 3 3 5-6',
+  star:'M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z',
+  doc:'M7 3h7l5 5v13H7zM14 3v5h5M9 13h6M9 17h6',
+  back:'M15 18l-6-6 6-6',
+  print:'M6 9V3h12v6M6 18H4v-5h16v5h-2M8 14h8v7H8z',
+  excel:'M4 3h11l5 5v13H4zM14 3v5h5M8 12l5 6M13 12l-5 6',
+  check:'M20 6L9 17l-5-5',
+  user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20a8 8 0 0 1 16 0',
+  cal:'M3 8h18M7 3v3M17 3v3M4 5h16v16H4zM8 13h.01M12 13h.01M16 13h.01',
+  flag:'M5 21V4M5 4c3-2 6 2 9 0s5 0 5 0v9s-2 2-5 0-6-2-9 0',
+  spark:'M5 12h4l2-6 3 12 2-6h3',
+};
+function icon(name, cls){
+  return h('svg',{className:'ic '+(cls||''),viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','strokeWidth':2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:IC[name]||''}));
+}
+
+const SERIES_COLORS = ['#7A4F94','#C08A3A','#2F6F9E','#B0496B','#4E8A86','#6f8f3e','#9c6b2e','#5B6FA8'];
+const PALETTES = {
+  grape:{a:'#7A4F94',aD:'#5D3A73',aT:'#F0E9F5',aT2:'#E2D3EE',aInk:'#48305a'},
+  rose:{a:'#B0496B',aD:'#8C3854',aT:'#F7E8EE',aT2:'#EDD2DD',aInk:'#7a2f49'},
+  ocean:{a:'#2F6F9E',aD:'#23527A',aT:'#E6F0F7',aT2:'#D2E3F0',aInk:'#214c70'},
+};
+
+// ====== 設定 ======
+// 與兒童評核介面相同的 Apps Script 網址（讀取同一份試算表）
+const SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwaam9mQ4NY6uH71_ZDeL9Ty1HjawqIAU7cf4LJy1RvbuknVByyFSKD3BCdeUga6LBBXA/exec';
+// 進入管理端的密碼
+const ADMIN_PIN = 'tmuh-epa';
+
+class Component extends DCLogic {
+  state = {
+    loading:true, authed:false, pinInput:'', loadError:'',
+    role:'student', layout:'sidebar',
+    sStudent:'', sEpa:'ALL',
+    mSort:'name', mSel:[], mChart:'trend',
+    students:[], teachers:[], assessments:[],
+    toast:null,
+  };
+
+  get sheetUrl(){ return ((this.props.sheetUrl||'') || SHEET_WEBAPP_URL || '').trim(); }
+
+  loadData(){
+    if(typeof location!=='undefined' && /[?&]demo/.test(location.search)){
+      const D=this.D;
+      const students=D.STUDENTS.map(s=>({id:s.name,name:s.name,stage:D.deriveStage(s.track,s.startDate),active:true}));
+      const assessments=D.SEED_ASSESSMENTS.map((a,i)=>({
+        id:'a'+i, studentId:D.studentById[a.studentId].name, epaId:a.epaId, date:a.date, _ts:a._ts,
+        stage:a.stage, evaluator:a.evaluator, overall:a.overall, items:a.items,
+        context:a.context, qualitative:a.qualitative
+      })).sort((x,y)=>x._ts-y._ts);
+      this.setState({loading:false, students, teachers:D.TEACHERS.slice(), assessments, sStudent:this.state.sStudent||(students[0]&&students[0].id)});
+      return;
+    }
+    if(!this.sheetUrl){ this.setState({loading:false, loadError:'未設定試算表網址'}); return; }
+    this.setState({loading:true, loadError:''});
+    fetch(this.sheetUrl+'?action=alldata').then(r=>r.json()).then(r=>{
+      if(!r||!r.ok) throw new Error((r&&r.error)||'load failed');
+      const students=(r.students||[]).map(s=>({ id:s.name, name:s.name, stage:s.stage||'PGY1', active:s.active!==false }));
+      const assessments=(r.assessments||[]).map((a,i)=>this.toAssessment(a,i)).filter(Boolean).sort((x,y)=>x._ts-y._ts);
+      const firstStu = students[0]? students[0].id : '';
+      this.setState({loading:false, students, teachers:r.teachers||[], assessments, sStudent:this.state.sStudent||firstStu});
+    }).catch(e=>{ this.setState({loading:false, loadError:'無法讀取資料，請檢查網路與部署設定'}); });
+  }
+  // 將試算表一列轉為內部 assessment 物件
+  toAssessment(a, i){
+    const D=this.D;
+    const epaId = (a.epa||'').replace(/\s/g,''); // 'EPA1'
+    if(!D.epaById[epaId]) return null;
+    const ts = a.date? new Date(a.date).getTime() : (a.submitted? new Date(a.submitted).getTime() : Date.now()-i);
+    const splitList = s=> (s||'').split(/[、,]/).map(x=>x.trim()).filter(Boolean);
+    return {
+      id:'a'+i, studentId:a.student, epaId, date:a.date||'', _ts: isNaN(ts)?Date.now()-i:ts,
+      stage:a.stage||'PGY1', evaluator:a.evaluator||'',
+      overall:(a.overall||'').trim(),
+      items:[],
+      context:{ diagnosis:splitList(a.diagnosis), diagnosisOther:'', assessItems:splitList(a.assessItems),
+        source:a.source||'', dept:a.dept||'', ward:a.ward||'', reportType:a.reportType||'' },
+      qualitative:a.qualitative||''
+    };
+  }
+
+  componentDidMount(){
+    Promise.resolve(window.EPA_DATA).then(D=>{ this.D = D; this.loadData(); });
+    const pal = PALETTES[this.props.accent] || PALETTES.grape;
+    Object.entries(pal).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k, v));
+  }
+  componentDidUpdate(prev){
+    if(prev.accent!==this.props.accent){
+      const pal = PALETTES[this.props.accent] || PALETTES.grape;
+      Object.entries(pal).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k, v));
+    }
+  }
+
+  // ---- helpers ----
+  allStudents(){ return (this.state.students||[]); }
+  students(){ return this.allStudents().filter(s=>s.active!==false); }
+  stuById(id){ return (this.state.students||[]).find(x=>x.id===id) || null; }
+  teachers(){ return this.state.teachers||[]; }
+  studentAssessments(sid){ return (this.state.assessments||[]).filter(a=>a.studentId===sid).sort((a,b)=>a._ts-b._ts); }
+  latestPerEpa(sid){
+    const D=this.D, out={};
+    D.EPAS.forEach(e=>{
+      const arr=this.studentAssessments(sid).filter(a=>a.epaId===e.id);
+      out[e.id]= arr.length? arr[arr.length-1] : null;
+    });
+    return out;
+  }
+  overallVal(a){ return a? this.D.valByCode[a.overall] : null; }
+  studentModeOverall(sid){
+    const D=this.D; const arr=this.studentAssessments(sid).map(a=>a.overall).filter(c=>c&&c!=='NA');
+    if(!arr.length) return null;
+    const cnt={}; arr.forEach(c=>{cnt[c]=(cnt[c]||0)+1;});
+    let best=null,bn=-1;
+    Object.keys(cnt).forEach(c=>{ const n=cnt[c]; if(n>bn || (n===bn && D.valByCode[c]>D.valByCode[best])){best=c;bn=n;} });
+    return best;
+  }
+  studentModeVal(sid){ const c=this.studentModeOverall(sid); return c!=null? this.D.valByCode[c]:null; }
+  studentModeCount(sid){ const c=this.studentModeOverall(sid); if(c==null)return 0; return this.studentAssessments(sid).filter(a=>a.overall===c).length; }
+  contextLabelsOf(a){
+    const c=a.context||{}, out=[];
+    (c.diagnosis||[]).forEach(dg=>{ if(dg==='其它'){ if(c.diagnosisOther) out.push(c.diagnosisOther.trim()); } else out.push(dg); });
+    return out;
+  }
+  epaContexts(sid, epaId){
+    const set=new Set();
+    this.studentAssessments(sid).filter(a=>a.epaId===epaId).forEach(a=>this.contextLabelsOf(a).forEach(l=>l&&set.add(l)));
+    return set;
+  }
+  ctxNote(){
+    const D=this.D, byCtx={};
+    D.EPAS.forEach(e=>{ (byCtx[e.minCtx]=byCtx[e.minCtx]||[]).push('EPA'+e.no); });
+    return Object.keys(byCtx).map(Number).sort((a,b)=>a-b)
+      .map(k=>byCtx[k].join('、')+' 至少 '+k+' 種').join('；');
+  }
+  toast(msg){ this.setState({toast:msg}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:null}),2200); }
+
+  renderVals(){
+    return { app: this.renderRoot() };
+  }
+
+  renderRoot(){
+    const {authed,toast}=this.state;
+    if(!authed) return el('div',null, this.renderGate(), toast ? el('div','toast', toast) : null);
+    return this.renderApp();
+  }
+
+  renderGate(){
+    return h('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}},
+      h('div',{className:'card',style:{padding:'30px 32px',maxWidth:380,textAlign:'center'}},
+        h('div',{className:'brand-mark',style:{width:54,height:54,borderRadius:15,margin:'0 auto 16px'}}, h('span',{style:{fontSize:22}},'EPA')),
+        h('h2',{className:'serif',style:{fontSize:21,fontWeight:900,marginBottom:6}},'學員趨勢與訓練管理'),
+        h('p',{style:{fontSize:13,color:'var(--muted)',marginBottom:20}},'此區為負責老師專用，請輸入管理者密碼。'),
+        h('input',{className:'input',type:'password',value:this.state.pinInput,placeholder:'管理者密碼',
+          style:{textAlign:'center'},
+          onChange:e=>this.setState({pinInput:e.target.value}),
+          onKeyDown:e=>{if(e.key==='Enter')this.tryAuth();}}),
+        h('button',{className:'btn btn-primary',style:{marginTop:14,width:'100%',justifyContent:'center'},onClick:()=>this.tryAuth()}, icon('chart'),'進入'))
+    );
+  }
+  tryAuth(){
+    if(this.state.pinInput===ADMIN_PIN) this.setState({authed:true, pinInput:''});
+    else this.toast('密碼錯誤');
+  }
+
+  renderApp(){
+    const {toast}=this.state;
+    return el('div','shell',
+      this.renderTopbar(),
+      h('div',{className:'body'},
+        this.renderSidebar(),
+        h('div',{className:'main'},
+          this.state.loading? h('div',{className:'empty',style:{paddingTop:80}}, icon('chart'), h('div',null,'讀取試算表資料中…'))
+          : this.state.loadError? h('div',{className:'empty',style:{paddingTop:80}}, icon('flag'),
+              h('div',null,this.state.loadError),
+              h('button',{className:'btn btn-ghost btn-sm',style:{marginTop:14},onClick:()=>this.loadData()},'重新載入'))
+          : !this.state.assessments.length? h('div',{className:'empty',style:{paddingTop:80}}, icon('doc'),
+              h('div',null,'試算表中尚無評核資料'),
+              h('div',{style:{fontSize:12,marginTop:6}},'待臨床教師送出評核後即可在此查看趨勢。'))
+          : this.renderContent()
+        )
+      ),
+      toast ? el('div','toast', toast) : null
+    );
+  }
+
+  renderTopbar(){
+    const {role}=this.state;
+    const roles=[['student','學員趨勢','student'],['manager','訓練管理','manager']];
+    return el('header','topbar',
+      el('div','brand',
+        h('div',{className:'brand-mark'}, h('span',null,'EPA')),
+        el('div','brand-txt', h('b',null,'兒童職能治療 · 學員趨勢與訓練管理'), h('small',null,'臺北醫學大學附設醫院 · 資料來源：評核試算表'))
+      ),
+      el('div','topbar-spacer'),
+      h('div',{className:'role-seg'},
+        roles.map(([k,label,ic])=>h('button',{key:k,className:role===k?'on':'',onClick:()=>this.setState({role:k})},
+          icon(ic), h('span',{className:'t'},label)))
+      ),
+      h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.loadData()}, '↻ 重新整理')
+    );
+  }
+
+  renderSidebar(){
+    const {role}=this.state;
+    return el('aside','sidebar',
+      el('div','side-h', role==='manager'?'管理總覽':'學員檢視'),
+      role==='student'? this.students().map(s=>h('button',{key:s.id,className:'nav-item '+(this.state.sStudent===s.id?'on':''),onClick:()=>this.setState({sStudent:s.id})},
+        icon('user'), s.name, h('span',{className:'badge'},s.stage))) : null,
+      role==='manager'? h('button',{className:'nav-item on'}, icon('chart'),'學員概況') : null,
+      el('div','side-foot','信賴等級 1a–5（5 分為滿分）。趨勢以「整體任務」換算：1a=1、1b=1.5、2a=2、2b=2.5、3a=3、3b=3.5、3c=3.75、4=4、5=5。')
+    );
+  }
+
+  renderContent(){
+    const {role}=this.state;
+    if(role==='manager') return this.renderManager();
+    return this.renderStudent();
+  }
+
+  lvColor(v){
+    if(v==null) return {bg:'#ECE5D7',fg:'#8A8275'};
+    if(v<2) return {bg:'#EAD3C8',fg:'#9c4a32'};
+    if(v<3) return {bg:'#F1E2C4',fg:'#8a6420'};
+    if(v<4) return {bg:'var(--aT2)',fg:'var(--aInk)'};
+    return {bg:'var(--a)',fg:'#fff'};
+  }
+  downloadFile(name, text, type){
+    const blob=new Blob(['\ufeff'+text],{type:type||'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+  }
+
+  // 折線圖（學員趨勢 + 同儕趨勢 + 期望線）
+  lineChart(studentPts, cohortPts, target, targetLabel){
+    const D=this.D, W=760,H=300,padL=44,padR=18,padT=18,padB=42;
+    const N=Math.max(studentPts.length, 1);
+    const xFor=i=> padL + (N<=1?0.5:i/(N-1))*(W-padL-padR);
+    const yFor=v=> padT + (1-(v-1)/4)*(H-padT-padB);
+    const mkPoly=pts=> pts.map((p,i)=>xFor(i)+','+yFor(p.v)).join(' ');
+    const grid=[1,2,3,4,5];
+    const labelEvery=Math.max(1,Math.ceil(N/6));
+    return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:'auto',display:'block'}},
+      grid.map(v=>h('g',{key:'g'+v},
+        h('line',{x1:padL,x2:W-padR,y1:yFor(v),y2:yFor(v),stroke:'var(--line)','strokeWidth':1}),
+        h('text',{x:padL-8,y:yFor(v)+4,textAnchor:'end',fontSize:11,fill:'var(--muted)'}, D.codeByVal[v]||v))),
+      target!=null? h('g',null,
+        h('line',{x1:padL,x2:W-padR,y1:yFor(target),y2:yFor(target),stroke:'var(--gold)','strokeWidth':2,strokeDasharray:'6 5'}),
+        h('text',{x:W-padR,y:yFor(target)-7,textAnchor:'end',fontSize:11,fontWeight:700,fill:'var(--gold)'},'期望 '+targetLabel))
+      :null,
+      studentPts.map((p,i)=> i%labelEvery===0 || i===N-1 ? h('text',{key:'x'+i,x:xFor(i),y:H-padB+20,textAnchor:'middle',fontSize:10,fill:'var(--muted)'}, p.date.slice(5)) : null),
+      cohortPts.length>1? h('polyline',{points:mkPoly(cohortPts),fill:'none',stroke:'var(--peer)','strokeWidth':2,strokeDasharray:'2 4',opacity:.9}):null,
+      cohortPts.map((p,i)=>h('circle',{key:'c'+i,cx:xFor(i),cy:yFor(p.v),r:2.5,fill:'var(--peer)'})),
+      studentPts.length>1? h('polyline',{points:mkPoly(studentPts),fill:'none',stroke:'var(--a)','strokeWidth':3,strokeLinejoin:'round',strokeLinecap:'round'}):null,
+      studentPts.map((p,i)=>h('circle',{key:'s'+i,cx:xFor(i),cy:yFor(p.v),r:4.5,fill:'#fff',stroke:'var(--a)','strokeWidth':2.5})),
+      studentPts.length===1? h('text',{x:xFor(0),y:yFor(studentPts[0].v)-12,textAnchor:'middle',fontSize:12,fontWeight:800,fill:'var(--aInk)'},D.codeByVal[studentPts[0].v]):null
+    );
+  }
+
+  cohortCumAt(stage, epaId, ts, excludeId){
+    const D=this.D;
+    const rel=(this.state.assessments||[]).filter(a=>a.stage===stage && a.studentId!==excludeId && (epaId==='ALL'||a.epaId===epaId) && a._ts<=ts);
+    const vals=rel.map(a=>D.valByCode[a.overall]).filter(v=>v!=null);
+    return vals.length? vals.reduce((x,y)=>x+y,0)/vals.length : null;
+  }
+
+  renderStudent(){
+    const D=this.D, sid=this.state.sStudent, stu=this.stuById(sid), f=this.state.sEpa;
+    if(!stu) return el('div','wrap', el('div','empty', icon('user'), h('div',null,'請於左側選擇學員')));
+    const all=this.studentAssessments(sid);
+    const filt= f==='ALL'? all : all.filter(a=>a.epaId===f);
+    const studentPts=filt.map(a=>({ts:a._ts,date:a.date,v:D.valByCode[a.overall]})).filter(p=>p.v!=null);
+    const cohortPts=studentPts.map(p=>({ts:p.ts,date:p.date,v:this.cohortCumAt(stu.stage,f,p.ts,sid)})).filter(p=>p.v!=null);
+    const hasPeer=cohortPts.length>0;
+    const target=D.TARGET[stu.stage], targetLabel=D.TARGET_LABEL[stu.stage];
+    const repCode=this.studentModeOverall(sid);
+    const repV=repCode!=null? D.valByCode[repCode]:null;
+    const repCount=this.studentModeCount(sid);
+    const lp=this.latestPerEpa(sid);
+    const epasCovered=Object.values(lp).filter(Boolean).length;
+    const latestV = studentPts.length? studentPts[studentPts.length-1].v : null;
+
+    return el('div','wrap fade',
+      el('div','page-head',
+        el('div',null, el('div','eyebrow','學員檢視 · 成長趨勢'),
+          h('h1',null, stu.name+'　', h('span',{className:'chip stage',style:{verticalAlign:'middle',fontSize:13}},stu.stage)),
+          h('p',null,'期望達成等級 '+targetLabel+'　·　共 '+all.length+' 次評核')),
+        h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.exportStudentCSV(sid)}, icon('excel'),'匯出此學員 Excel')
+      ),
+      h('div',{className:'kpi-grid'},
+        el('div','card kpi', el('div','k','代表等級（最常見）'), h('div',{className:'v'}, repCode||'—', repCode? h('small',null,' '+D.lvForCode(repCode)):null), el('div','d', repCode? repCount+' / '+all.length+' 次為此等級'+(repV>=target?'、已達期望':''):'尚無資料')),
+        el('div','card kpi', el('div','k','總評核次數'), h('div',{className:'v'}, all.length), el('div','d','涵蓋 '+epasCovered+' / 4 項 EPA')),
+        el('div','card kpi', el('div','k','最近一次'), h('div',{className:'v'}, latestV!=null? D.codeByVal[latestV]:'—'), el('div','d', filt.length? filt[filt.length-1].date : '尚無資料')),
+        el('div','card kpi', el('div','k','期望達成等級'), h('div',{className:'v'}, targetLabel), el('div','d', stu.stage+' 訓練目標'))
+      ),
+      h('div',{style:{margin:'4px 0 14px'}},
+        h('div',{className:'seg'},
+          [['ALL','全部 EPA']].concat(D.EPAS.map(e=>[e.id,'EPA'+e.no])).map(([k,lab])=>
+            h('button',{key:k,className:f===k?'on':'',onClick:()=>this.setState({sEpa:k})},lab)))
+      ),
+      el('div','card chart-card',
+        el('div','chart-head',
+          h('h3',null, (f==='ALL'?'整體':('EPA'+D.epaById[f].no+' '+D.epaById[f].short))+'　信賴等級趨勢'),
+          h('div',{className:'legend'},
+            h('span',null, h('i',{style:{background:'var(--a)'}}),'本人'),
+            hasPeer? h('span',null, h('i',{style:{background:'var(--peer)'}}),'同期別平均（'+stu.stage+'）'):null,
+            h('span',null, h('i',{className:'dash'}),'期望等級'))
+        ),
+        studentPts.length? this.lineChart(studentPts,cohortPts,target,targetLabel)
+          : el('div','empty', icon('chart'), h('div',null,'此 EPA 尚無評核紀錄'))
+      ),
+      el('div','card chart-card',
+        h('div',{className:'chart-head'}, h('h3',null,'各 EPA 最新信賴等級')),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:13,marginTop:6}},
+          D.EPAS.map(e=>{
+            const a=lp[e.id], v=a?D.valByCode[a.overall]:null, col=this.lvColor(v);
+            const tg=D.TARGET[stu.stage];
+            return h('div',{key:e.id,style:{display:'flex',alignItems:'center',gap:12}},
+              h('div',{style:{width:64,fontSize:12.5,fontWeight:700,color:'var(--sub)',flex:'none'}},'EPA'+e.no+' '+e.short),
+              h('div',{style:{flex:1,position:'relative',height:18,background:'var(--bg2)',borderRadius:9}},
+                v!=null? h('div',{style:{position:'absolute',left:0,top:0,height:'100%',width:(v/5*100)+'%',background:col.bg==='var(--a)'?'var(--a)':col.bg,borderRadius:9}}):null,
+                h('div',{title:'期望 '+D.TARGET_LABEL[stu.stage],style:{position:'absolute',left:(tg/5*100)+'%',top:-3,height:24,width:2,background:'var(--gold)'}})
+              ),
+              h('div',{style:{width:78,textAlign:'right',fontSize:12.5,fontWeight:800,color:v!=null?'var(--aInk)':'var(--muted)',flex:'none'}}, v!=null? a.overall+' · '+D.lvForCode(a.overall):'未評核'));
+          })
+        )
+      ),
+      el('div','card chart-card',
+        h('div',{className:'chart-head'}, h('h3',null,'情境涵蓋（完成訓練門檻）'), h('span',{style:{fontSize:12,color:'var(--muted)'}},'各 EPA 需累計不同診斷情境')),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:11,marginTop:6}},
+          D.EPAS.map(e=>{
+            const set=this.epaContexts(sid,e.id), n=set.size, met=n>=e.minCtx;
+            const list=[...set];
+            return h('div',{key:e.id,style:{display:'flex',alignItems:'flex-start',gap:12,flexWrap:'wrap'}},
+              h('div',{style:{width:64,fontSize:12.5,fontWeight:700,color:'var(--sub)',flex:'none'}},'EPA'+e.no+' '+e.short),
+              h('span',{className:'chip '+(met?'stage':'gold'),style:{flex:'none'}}, (met?'✓ ':'')+'情境 '+n+' / '+e.minCtx),
+              h('div',{style:{flex:1,minWidth:160,fontSize:12.5,color:list.length?'var(--sub)':'var(--muted)'}}, list.length? list.join('、') : '尚未評核'));
+          })
+        ),
+        h('p',{style:{fontSize:11.5,color:'var(--muted)',marginTop:10}},'完成訓練之情境門檻：'+this.ctxNote()+'；「其它」需填寫具體診斷才計入。')
+      ),
+      el('div','card chart-card',
+        h('div',{className:'chart-head'}, h('h3',null,'評核回饋歷程'), h('span',{style:{fontSize:12,color:'var(--muted)'}}, filt.length+' 筆')),
+        h('div',{style:{marginTop:6}},
+          filt.length? [...filt].reverse().map(a=>{
+            const v=D.valByCode[a.overall], col=this.lvColor(v);
+            return h('div',{key:a.id,className:'feed-item'},
+              h('div',{className:'fh'},
+                h('span',null, h('b',null,'EPA'+D.epaById[a.epaId].no+' '+D.epaById[a.epaId].short),'　', a.date,'　·　',a.evaluator),
+                h('span',{className:'lvpill',style:{background:col.bg,color:col.fg,fontSize:11.5}}, a.overall+' '+D.lvForCode(a.overall))),
+              a.qualitative? h('p',null,a.qualitative):h('p',{style:{fontStyle:'italic',color:'var(--muted)'}},'（無質性回饋）'));
+          }) : el('div','empty', icon('doc'), h('div',null,'尚無回饋紀錄'))
+        )
+      )
+    );
+  }
+
+  exportStudentCSV(sid){
+    const D=this.D, stu=this.stuById(sid);
+    const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+    const L=[['日期','EPA','報告類型','診斷情境','評核者','整體任務代碼','整體數值'].map(q).join(',')];
+    this.studentAssessments(sid).forEach(a=>{
+      L.push([a.date,'EPA'+D.epaById[a.epaId].no+' '+D.epaById[a.epaId].title,a.context.reportType||'',this.contextLabelsOf(a).join('、'),a.evaluator,a.overall,D.valByCode[a.overall]??''].map(q).join(','));
+    });
+    this.downloadFile('EPA趨勢_'+stu.name+'.csv', L.join('\r\n'));
+    this.toast('已下載 '+stu.name+' 的趨勢 Excel(CSV)');
+  }
+  exportAllCSV(){
+    const D=this.D;
+    const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+    const L=[['學員','期別','日期','EPA','診斷情境','評核者','整體代碼','整體數值','質性回饋'].map(q).join(',')];
+    [...(this.state.assessments||[])].sort((a,b)=>a._ts-b._ts).forEach(a=>{
+      L.push([(this.stuById(a.studentId)||{}).name||'',a.stage,a.date,'EPA'+D.epaById[a.epaId].no,this.contextLabelsOf(a).join('、'),a.evaluator,a.overall,D.valByCode[a.overall]??'',a.qualitative].map(q).join(','));
+    });
+    this.downloadFile('兒童EPA全部評核紀錄.csv', L.join('\r\n'));
+    this.toast('已下載全部評核紀錄 Excel(CSV)');
+  }
+
+  toggleSel(id){
+    this.setState(s=>{ const sel=s.mSel.slice(); const i=sel.indexOf(id); if(i<0)sel.push(id); else sel.splice(i,1); return {mSel:sel}; });
+  }
+  colorFor(i){ return SERIES_COLORS[i%SERIES_COLORS.length]; }
+  targetLinesFor(ids){
+    const D=this.D, seen={}, out=[];
+    ids.forEach(id=>{const st=this.stuById(id).stage; const v=D.TARGET[st]; if(!seen[v]){seen[v]=1; out.push({v,label:D.TARGET_LABEL[st]});}});
+    return out.sort((a,b)=>a.v-b.v);
+  }
+  multiLineChart(series, targets){
+    const D=this.D, W=760,H=300,padL=40,padR=16,padT=16,padB=42;
+    const allPts=series.flatMap(s=>s.pts);
+    if(!allPts.length) return el('div','empty', icon('chart'), h('div',null,'所選學員尚無評核資料'));
+    let minT=Math.min(...allPts.map(p=>p.ts)), maxT=Math.max(...allPts.map(p=>p.ts));
+    if(minT===maxT){minT-=86400000*7;maxT+=86400000*7;}
+    const xFor=t=> padL + (t-minT)/(maxT-minT)*(W-padL-padR);
+    const yFor=v=> padT + (1-(v-1)/4)*(H-padT-padB);
+    const fmt=ts=>{const d=new Date(ts);return (d.getMonth()+1)+'/'+d.getDate();};
+    const grid=[1,2,3,4,5], xticks=5;
+    return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:'auto',display:'block'}},
+      grid.map(v=>h('g',{key:'g'+v},
+        h('line',{x1:padL,x2:W-padR,y1:yFor(v),y2:yFor(v),stroke:'var(--line)','strokeWidth':1}),
+        h('text',{x:padL-7,y:yFor(v)+4,textAnchor:'end',fontSize:11,fill:'var(--muted)'}, D.codeByVal[v]||v))),
+      targets.map((t,i)=>h('g',{key:'t'+i},
+        h('line',{x1:padL,x2:W-padR,y1:yFor(t.v),y2:yFor(t.v),stroke:'var(--gold)','strokeWidth':1.5,strokeDasharray:'6 5',opacity:.7}),
+        h('text',{x:W-padR,y:yFor(t.v)-6,textAnchor:'end',fontSize:10,fontWeight:700,fill:'var(--gold)'},'期望 '+t.label))),
+      Array.from({length:xticks+1}).map((_,i)=>{const t=minT+(maxT-minT)*i/xticks;return h('text',{key:'x'+i,x:xFor(t),y:H-padB+20,textAnchor:'middle',fontSize:10,fill:'var(--muted)'},fmt(t));}),
+      series.map((s,si)=> s.pts.length>1? h('polyline',{key:'l'+si,points:s.pts.map(p=>xFor(p.ts)+','+yFor(p.v)).join(' '),fill:'none',stroke:s.color,'strokeWidth':2.6,strokeLinejoin:'round',strokeLinecap:'round'}):null),
+      series.flatMap((s,si)=> s.pts.map((p,pi)=>h('circle',{key:'d'+si+'_'+pi,cx:xFor(p.ts),cy:yFor(p.v),r:3.6,fill:'#fff',stroke:s.color,'strokeWidth':2})))
+    );
+  }
+  groupedBars(sel, targets){
+    const D=this.D, W=760,H=300,padL=40,padR=14,padT=16,padB=46;
+    const groups=D.EPAS, n=Math.max(1,sel.length);
+    const gw=(W-padL-padR)/groups.length;
+    const barAreaW=gw*0.72, bw=barAreaW/n;
+    const yFor=v=> padT+(1-v/5)*(H-padT-padB);
+    const base=yFor(0);
+    return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:'auto',display:'block'}},
+      [0,1,2,3,4,5].map(v=>h('g',{key:'g'+v},
+        h('line',{x1:padL,x2:W-padR,y1:yFor(v),y2:yFor(v),stroke:'var(--line)','strokeWidth':1}),
+        h('text',{x:padL-7,y:yFor(v)+4,textAnchor:'end',fontSize:11,fill:'var(--muted)'}, v===0?'0':(D.codeByVal[v]||v)))),
+      targets.map((t,i)=>h('line',{key:'t'+i,x1:padL,x2:W-padR,y1:yFor(t.v),y2:yFor(t.v),stroke:'var(--gold)','strokeWidth':1.5,strokeDasharray:'6 5',opacity:.7})),
+      groups.map((e,gi)=>{
+        const gx=padL+gi*gw+(gw-barAreaW)/2;
+        return h('g',{key:e.id},
+          h('text',{x:padL+gi*gw+gw/2,y:H-padB+20,textAnchor:'middle',fontSize:11,fontWeight:700,fill:'var(--sub)'},'EPA'+e.no),
+          sel.map((id,si)=>{
+            const a=this.latestPerEpa(id)[e.id], v=a?D.valByCode[a.overall]:null;
+            const x=gx+si*bw;
+            if(v==null) return h('rect',{key:si,x:x+1,y:base-2,width:bw-2,height:2,fill:'var(--line)'});
+            return h('g',{key:si},
+              h('rect',{x:x+1,y:yFor(v),width:bw-2,height:base-yFor(v),rx:2,fill:this.colorFor(si)}),
+              h('text',{x:x+bw/2,y:yFor(v)-4,textAnchor:'middle',fontSize:9,fontWeight:700,fill:this.colorFor(si)}, a.overall));
+          })
+        );
+      })
+    );
+  }
+  renderCompare(){
+    const D=this.D, ids=this.state.mSel, mode=this.state.mChart;
+    const targets=this.targetLinesFor(ids);
+    const series=ids.map((id,i)=>({ id, name:this.stuById(id).name, color:this.colorFor(i),
+      pts:this.studentAssessments(id).map(a=>({ts:a._ts,v:D.valByCode[a.overall]})).filter(p=>p.v!=null) }));
+    return el('div','card chart-card',
+      el('div','chart-head',
+        h('h3',null,'同儕比較　·　已選 '+ids.length+' 位學員'),
+        h('div',{style:{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}},
+          h('div',{className:'seg',style:{flexWrap:'nowrap'}},
+            h('button',{style:{whiteSpace:'nowrap'},className:mode==='trend'?'on':'',onClick:()=>this.setState({mChart:'trend'})},'趨勢圖'),
+            h('button',{style:{whiteSpace:'nowrap'},className:mode==='bar'?'on':'',onClick:()=>this.setState({mChart:'bar'})},'柱狀圖')),
+          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>this.setState({mSel:[]})},'清除選取'))
+      ),
+      h('div',{className:'legend',style:{margin:'2px 0 10px'}},
+        series.map(s=>h('span',{key:s.id}, h('span',{className:'cmp-dot',style:{background:s.color}}), s.name+'（'+this.stuById(s.id).stage+'）')),
+        targets.length? h('span',null, h('i',{className:'dash'}),'期望等級') : null),
+      mode==='trend'? this.multiLineChart(series,targets) : this.groupedBars(ids,targets),
+      h('p',{style:{fontSize:11.5,color:'var(--muted)',marginTop:8}}, mode==='trend'? '折線：各學員「整體任務」信賴等級隨時間變化（依評核日期）。' : '柱狀：各學員在每項 EPA 的最新整體信賴等級。')
+    );
+  }
+
+  renderManager(){
+    const D=this.D, rows=this.students().map(s=>{
+      const all=this.studentAssessments(s.id);
+      const repCode=this.studentModeOverall(s.id);
+      const repV=repCode!=null? D.valByCode[repCode]:null;
+      const lp=this.latestPerEpa(s.id);
+      const covered=Object.values(lp).filter(Boolean).length;
+      const target=D.TARGET[s.stage];
+      return {s, all, repCode, repV, lp, covered, target, meet: repV!=null&&repV>=target,
+        ctxMet: D.EPAS.filter(e=>this.epaContexts(s.id,e.id).size>=e.minCtx).length};
+    });
+    const sort=this.state.mSort;
+    rows.sort((a,b)=> sort==='mean'? (b.repV||0)-(a.repV||0) : sort==='count'? b.all.length-a.all.length : a.s.name.localeCompare(b.s.name,'zh-Hant'));
+    const totalAssess=(this.state.assessments||[]).length;
+    const meetCount=rows.filter(r=>r.meet).length;
+    const avgAll = rows.filter(r=>r.repV!=null).reduce((x,r)=>x+r.repV,0)/Math.max(1,rows.filter(r=>r.repV!=null).length);
+
+    return el('div','wrap fade',
+      el('div','page-head',
+        el('div',null, el('div','eyebrow','訓練管理 · 學員概況'),
+          h('h1',null,'整體學員概況'),
+          h('p',null,'掌握各學員評核次數、EPA 涵蓋度與是否達到期望信賴等級。')),
+        h('div',{style:{display:'flex',gap:10,flexWrap:'wrap'}},
+          h('button',{className:'btn btn-soft',onClick:()=>this.exportAllCSV()}, icon('excel'),'匯出全部 Excel'))
+      ),
+      h('div',{className:'kpi-grid'},
+        el('div','card kpi', el('div','k','在訓學員'), h('div',{className:'v'}, this.students().length), el('div','d','PGY1 · PGY2 · 新進員工')),
+        el('div','card kpi', el('div','k','累計評核'), h('div',{className:'v'}, totalAssess), el('div','d','4 項 EPA 即時評核')),
+        el('div','card kpi', el('div','k','達期望等級'), h('div',{className:'v'}, meetCount, h('small',null,' / '+this.students().length)), el('div','d','代表等級 ≥ 期望')),
+        el('div','card kpi', el('div','k','代表等級均值'), h('div',{className:'v'}, avgAll.toFixed(1), h('small',null,' / 5')), el('div','d','全體代表等級平均'))
+      ),
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,margin:'4px 0 12px',flexWrap:'wrap'}},
+        h('span',{style:{fontSize:12.5,color:'var(--muted)',fontWeight:600}},'排序'),
+        h('div',{className:'seg'},
+          [['name','姓名'],['mean','代表等級'],['count','評核次數']].map(([k,lab])=>
+            h('button',{key:k,className:sort===k?'on':'',onClick:()=>this.setState({mSort:k})},lab)))
+      ),
+      el('div','card tablewrap',
+        h('table',{className:'data'},
+          h('thead',null,h('tr',null,
+            h('th',{className:'selcol'}, h('span',{className:'selbox'+(this.state.mSel.length===rows.length&&rows.length?' on':''),onClick:()=>this.setState({mSel:this.state.mSel.length===rows.length?[]:rows.map(r=>r.s.id)})}, this.state.mSel.length===rows.length&&rows.length? icon('check'):null)),
+            h('th',null,'學員'), h('th',null,'期別'),
+            h('th',null,'評核次數'), h('th',null,'EPA涵蓋'),
+            ...D.EPAS.map(e=>h('th',{key:e.id,style:{textAlign:'center'}},'EPA'+e.no)),
+            h('th',{style:{textAlign:'center'}},'代表等級'), h('th',{style:{textAlign:'center'}},'達標'), h('th',{style:{textAlign:'center'}},'情境達標'))),
+          h('tbody',null,
+            rows.map(r=>{const isSel=this.state.mSel.includes(r.s.id);
+              return h('tr',{key:r.s.id,className:isSel?'selrow':'',onClick:()=>this.setState({role:'student',sStudent:r.s.id})},
+              h('td',{className:'selcol',onClick:(e)=>{e.stopPropagation();this.toggleSel(r.s.id);}}, h('span',{className:'selbox'+(isSel?' on':'')}, isSel? icon('check'):null)),
+              h('td',null, h('div',{style:{display:'flex',alignItems:'center',gap:10}},
+                h('div',{className:'avatar',style:{width:32,height:32,fontSize:14,borderRadius:9}},r.s.name[0]),
+                h('b',null,r.s.name))),
+              h('td',null, h('span',{className:'chip stage'},r.s.stage)),
+              h('td',{className:'num'}, r.all.length),
+              h('td',null, h('div',{style:{display:'flex',alignItems:'center',gap:7}},
+                h('div',{style:{width:46,height:6,background:'var(--bg2)',borderRadius:4,overflow:'hidden'}}, h('div',{style:{width:(r.covered/4*100)+'%',height:'100%',background:'var(--a)'}})),
+                h('span',{style:{fontSize:12,color:'var(--muted)'}},r.covered+'/4'))),
+              ...D.EPAS.map(e=>{const a=r.lp[e.id],v=a?D.valByCode[a.overall]:null,col=this.lvColor(v);
+                return h('td',{key:e.id,style:{textAlign:'center'}}, h('span',{className:'lvpill',style:{background:col.bg,color:col.fg,fontSize:11,padding:'2px 8px'}}, v!=null?a.overall:'—'));}),
+              h('td',{className:'num',style:{textAlign:'center'}}, r.repCode? h('span',{className:'lvpill',style:{background:this.lvColor(r.repV).bg,color:this.lvColor(r.repV).fg,fontSize:11.5}}, r.repCode):'—'),
+              h('td',{style:{textAlign:'center'}}, r.meet? h('span',{className:'chip stage'},'✓'):h('span',{className:'chip gold'}, r.repV!=null&&r.target-r.repV>0?'差'+(r.target-r.repV).toFixed(2).replace(/0+$/,'').replace(/\.$/,''):'—')),
+              h('td',{style:{textAlign:'center'}}, h('span',{className:'chip '+(r.ctxMet===4?'stage':'gold'),title:'已達情境門檻的 EPA 數'}, r.ctxMet+' / 4'))
+            );})
+          )
+        )
+      ),
+      this.state.mSel.length? this.renderCompare() : h('p',{style:{fontSize:12.5,color:'var(--muted)',margin:'14px 2px 0',display:'flex',alignItems:'center',gap:8}}, icon('chart'),'勾選左側核取方塊（可多選），即可比較同儕的趨勢圖或柱狀圖。'),
+      h('p',{style:{fontSize:12,color:'var(--muted)',marginTop:14}},'點選任一列可檢視該學員的成長趨勢與回饋歷程。')
+    );
+  }
+}
+</script>
+</body>
+</html>
